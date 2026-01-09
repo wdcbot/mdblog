@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Editor - mdblog Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/vditor/dist/index.css" />
+    <link rel="stylesheet" href="/admin-static/admin.css">
+    <script src="https://unpkg.com/vditor/dist/index.min.js"></script>
+</head>
+<body class="editor-body">
+    <div class="editor-nav">
+        <div class="editor-left">
+            <a href="/admin/posts" class="btn btn-outline btn-sm">
+                返回
+            </a>
+            <span class="editor-divider"></span>
+            <span class="editor-path">{{.Path}}</span>
+        </div>
+        <div>
+            <button class="btn btn-outline btn-sm" onclick="toggleDraft()" id="draft-btn">
+                <i class="fa-solid fa-file-pen"></i> <span id="draft-text">设为草稿</span>
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="saveContent()">
+                保存更改
+            </button>
+        </div>
+    </div>
+    
+    <div id="vditor"></div>
+    <textarea id="content-hidden" class="hidden">{{.Content}}</textarea>
+
+    <script>
+        const hiddenContent = document.getElementById('content-hidden').value
+        const vditor = new Vditor('vditor', {
+            height: '100%',
+            value: hiddenContent,
+            cache: { enable: false },
+            mode: 'ir',
+            placeholder: 'Start writing...',
+            outline: { enable: true },
+            toolbarConfig: { pin: true },
+            preview: { theme: { current: 'light' } },
+        })
+        
+        // 检查当前是否为草稿
+        function checkDraftStatus() {
+            const content = vditor ? vditor.getValue() : hiddenContent
+            const isDraft = /^---[\s\S]*?draft:\s*true[\s\S]*?---/.test(content)
+            const draftText = document.getElementById('draft-text')
+            const draftBtn = document.getElementById('draft-btn')
+            if (isDraft) {
+                draftText.textContent = '取消草稿'
+                draftBtn.classList.add('btn-warning')
+            } else {
+                draftText.textContent = '设为草稿'
+                draftBtn.classList.remove('btn-warning')
+            }
+            return isDraft
+        }
+        
+        // 初始化检查
+        setTimeout(checkDraftStatus, 500)
+        
+        // 切换草稿状态
+        function toggleDraft() {
+            let content = vditor.getValue()
+            const isDraft = checkDraftStatus()
+            
+            if (isDraft) {
+                // 移除 draft: true
+                content = content.replace(/^(---[\s\S]*?)draft:\s*true\n?([\s\S]*?---)/, '$1$2')
+                content = content.replace(/\n\n---/, '\n---') // 清理多余空行
+            } else {
+                // 添加 draft: true
+                content = content.replace(/^(---\n)/, '$1draft: true\n')
+            }
+            
+            vditor.setValue(content)
+            setTimeout(checkDraftStatus, 100)
+        }
+
+        function saveContent() {
+            const content = vditor.getValue()
+            const formData = new FormData()
+            formData.append('path', '{{.Path}}')
+            formData.append('content', content)
+
+            const btn = document.querySelector('.btn-primary')
+            const originalHTML = btn.innerHTML
+            btn.innerHTML = '保存中...'
+            btn.disabled = true
+            btn.classList.remove('btn-success')
+
+            fetch('/admin/save', { method: 'POST', body: formData })
+            .then(res => { if(!res.ok) throw new Error('Network error'); return res.json(); })
+            .then(data => {
+                if (data.status === 'ok') {
+                    btn.innerHTML = '已保存'
+                    btn.classList.add('btn-success')
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML
+                        btn.classList.remove('btn-success')
+                        btn.disabled = false
+                    }, 1500)
+                } else { throw new Error(data.error) }
+            })
+            .catch(err => { alert('保存失败: ' + err.message); btn.innerHTML = originalHTML; btn.disabled = false; })
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+{{ define "footer.html" }}
+    </main>
+
+    <!-- Create Modal (拟态风格) -->
+    <div id="createModal" class="modal-overlay">
+        <div class="modal-content neo-card">
+            <h3 style="margin: 0 0 1rem;">撰写新文章</h3>
+            <div class="form-group">
+                <label class="form-label">标题</label>
+                <input type="text" id="postTitle" class="form-control" placeholder="在此输入文章标题">
+            </div>
+            <div class="form-group">
+                <label class="form-label">分类</label>
+                <select id="postCategory" class="form-control">
+                    {{range .Categories}}
+                    <option value="{{.Name}}">{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">路径设置</label>
+                <input type="text" id="postSlug" class="form-control" placeholder="自定义路径（选填，例如 hello-world）">
+                <div id="slugPreview" style="font-size:12px;color:#999;margin-top:6px;"></div>
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="postDraft" style="width: auto;">
+                    <span>保存为草稿</span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeCreateModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitCreatePost()">创建文章</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function slugify(input) {
+            let s = (input || '').toLowerCase().trim()
+            s = s.replace(/\s+/g, '-')
+            s = s.replace(/[^a-z0-9\-]/g, '')
+            s = s.replace(/\-+/g, '-').replace(/^\-|\-$/g, '')
+            return s
+        }
+
+        function updateSlugPreview() {
+            const catField = document.getElementById('postCategory');
+            if (!catField) return;
+            const cat = catField.value || ''
+            const slug = document.getElementById('postSlug').value || ''
+            const safeSlug = slug || '(自动根据标题生成)'
+            document.getElementById('slugPreview').innerText = `预览：/` + cat + `/` + safeSlug + `.html`
+        }
+
+        function showCreateModal() { 
+            const modal = document.getElementById('createModal');
+            modal.style.display = 'flex';
+            modal.offsetHeight;
+            modal.classList.add('show');
+            document.getElementById('postTitle').focus();
+            updateSlugPreview()
+        }
+        
+        function closeCreateModal() { 
+            const modal = document.getElementById('createModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 200);
+        }
+        
+        const modal = document.getElementById('createModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) closeCreateModal();
+            });
+        }
+
+        function submitCreatePost() {
+            const title = document.getElementById('postTitle').value;
+            const category = document.getElementById('postCategory').value;
+            const slugInput = document.getElementById('postSlug').value;
+            const slug = slugInput ? slugify(slugInput) : slugify(title);
+            if (!title) return;
+            
+            const btn = document.querySelector('#createModal .btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '创建中...';
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('title', title); 
+            formData.append('category', category);
+            formData.append('slug', slug);
+            formData.append('draft', document.getElementById('postDraft').checked ? 'true' : 'false');
+            
+            fetch('/admin/create', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') window.location.href = '/admin/edit?path=' + encodeURIComponent(data.path);
+            })
+            .catch(err => {
+                alert('创建失败');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function toggleNav() {
+            const nav = document.querySelector('nav')
+            nav.classList.toggle('nav-open')
+        }
+
+        const titleInput = document.getElementById('postTitle');
+        if (titleInput) {
+            titleInput.addEventListener('input', function() {
+                const autoSlug = slugify(this.value)
+                const slugField = document.getElementById('postSlug')
+                if (!slugField.value) {
+                    slugField.value = autoSlug
+                }
+                updateSlugPreview()
+            })
+        }
+        
+        const catInput = document.getElementById('postCategory');
+        if (catInput) catInput.addEventListener('change', updateSlugPreview);
+        
+        const slugInput = document.getElementById('postSlug');
+        if (slugInput) slugInput.addEventListener('input', updateSlugPreview);
+    </script>
+</body>
+</html>
+{{ end }}

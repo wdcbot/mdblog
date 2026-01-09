@@ -1,0 +1,8 @@
+posts_per_page: 10
+search:
+    index_path: blog.bleve
+site:
+    base_url: http://localhost:8082
+    description: A high-performance blog powered by Go
+    title: wandaochengBlog
+theme: pure

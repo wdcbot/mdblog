@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home">
+    {% if not Query %}
+    <section class="hero">
+        <h1 class="hero-title">
+            Design. <span class="accent">Code.</span> Life.
+        </h1>
+        <p class="hero-desc">{{ Site.Description }}</p>
+    </section>
+    {% else %}
+    <h2 class="section-title">Results for "{{ Query }}"</h2>
+    <div class="divider"></div>
+    {% endif %}
+
+    <div class="post-list">
+        {% for post in Posts %}
+        <article class="post-preview">
+            <div class="post-preview-meta">
+                <span class="category">{{ post.Category }}</span>
+                <span class="dot"></span>
+                <span>{{ post.Date|date:"Jan 02, 2006" }}</span>
+            </div>
+            <h2 class="post-preview-title">
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html">{{ post.Title }}</a>
+            </h2>
+            <p class="post-preview-summary">{{ post.Summary }}</p>
+            <div class="post-preview-footer">
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html" class="read-more">Read Article →</a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="error-page">
+            <p class="error-text">No stories found yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if TotalPages > 1 %}
+    <nav class="pagination">
+        {% if HasPrev %}
+        <a href="/?page={{ PrevPage }}" class="pagination-link prev">← Prev</a>
+        {% endif %}
+        <span class="pagination-info">Page {{ CurrentPage }} / {{ TotalPages }}</span>
+        {% if HasNext %}
+        <a href="/?page={{ NextPage }}" class="pagination-link next">Next →</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

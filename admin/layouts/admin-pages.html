@@ -1,0 +1,65 @@
+{{ template "header.html" . }}
+        <div class="tabs">
+            <a href="/admin/posts">文章</a>
+            <a href="/admin/pages" class="active">独立页面</a>
+            <a href="/admin/categories">分类</a>
+            <a href="/admin/settings">系统设置</a>
+        </div>
+
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="panel-title" style="margin: 0;">管理独立页面</h2>
+            <button class="btn btn-primary btn-sm" onclick="createPage()">新增</button>
+        </div>
+        
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40%">标题</th>
+                        <th>缩略名</th>
+                        <th>日期</th>
+                        <th style="text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Pages}}
+                    <tr>
+                        <td>
+                            <a href="/admin/edit?path={{.FilePath}}" style="color: #444; text-decoration: none; font-weight: bold;">{{.Title}}</a>
+                            <a href="/page/{{.Slug}}.html" target="_blank" style="color: #999; margin-left: 5px;"><i class="fa-solid fa-external-link-alt" style="font-size: 10px;"></i></a>
+                        </td>
+                        <td>{{.Slug}}</td>
+                        <td>{{.Date.Format "2006-01-02"}}</td>
+                        <td style="text-align: right;">
+                            <a href="/admin/edit?path={{.FilePath}}" class="btn btn-outline btn-xs">编辑</a>
+                            <button onclick="deletePage('{{.Slug}}')" class="btn btn-danger btn-xs">删除</button>
+                        </td>
+                    </tr>
+                    {{end}}
+                    {{if not .Pages}}
+                    <tr>
+                        <td colspan="4" class="empty" style="text-align: center; padding: 20px; color: #999;">暂无独立页面</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+    <script>
+        function createPage() {
+            const title = prompt("请输入页面标题:")
+            if (title) {
+                const formData = new FormData(); formData.append('title', title)
+                fetch('/admin/pages/create', { method: 'POST', body: formData })
+                .then(res => res.json()).then(d => d.status==='ok'?window.location.href='/admin/edit?path='+encodeURIComponent(d.path):alert(d.error));
+            }
+        }
+        function deletePage(slug) {
+            if (confirm("确认删除页面 '" + slug + "' 吗？此操作不可恢复。")) {
+                const formData = new FormData(); formData.append('slug', slug)
+                fetch('/admin/pages/delete', { method: 'POST', body: formData })
+                .then(res => res.json()).then(d => d.status==='ok'?location.reload():alert(d.error));
+            }
+        }
+    </script>
+{{ template "footer.html" . }}

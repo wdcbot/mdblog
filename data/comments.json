@@ -1,0 +1,20 @@
+[
+  {
+    "id": "20260110051824",
+    "post_slug": "api-design",
+    "author": "爱国者",
+    "email": "12312313123@qq.com",
+    "content": "评论测试",
+    "created_at": "2026-01-10T05:18:24.932536+08:00",
+    "approved": true
+  },
+  {
+    "id": "20260110052059",
+    "post_slug": "api-design",
+    "author": "大哥",
+    "email": "20417204@qq.com",
+    "content": "我真的很喜欢",
+    "created_at": "2026-01-10T05:20:59.839962+08:00",
+    "approved": true
+  }
+]

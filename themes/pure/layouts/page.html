@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ Post.Title }} - {{ Site.Title }}{% endblock %}
+
+{% block content %}
+<article class="article">
+    <h1 class="page-title">{{ Post.Title }}</h1>
+    <div class="content">
+        {{ Content|safe }}
+    </div>
+</article>
+{% endblock %}

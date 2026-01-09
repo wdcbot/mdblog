@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}标签 - {{ Site.Title }}{% endblock %}
+
+{% block content %}
+<div class="tags-page">
+    <h1 class="page-title">标签</h1>
+    <p class="category-desc">共 {{ Tags|length }} 个标签</p>
+    
+    <div class="tags-cloud">
+        {% for tag in Tags %}
+        <a href="/tag/{{ tag.Name|urlencode }}" class="tag-item">
+            <span class="tag-name">#{{ tag.Name }}</span>
+            <span class="tag-count">{{ tag.PostCount }}</span>
+        </a>
+        {% empty %}
+        <p class="empty-text">暂无标签</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

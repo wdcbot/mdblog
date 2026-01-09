@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}#{{ Tag }} - {{ Site.Title }}{% endblock %}
+
+{% block content %}
+<div class="tag-page">
+    <h1 class="page-title">#{{ Tag }}</h1>
+    <p class="category-desc">共 {{ Posts|length }} 篇文章</p>
+    
+    <div class="post-list">
+        {% for post in Posts %}
+        <article class="post-preview">
+            <div class="post-preview-meta">
+                <span class="category">{{ post.Category }}</span>
+                <span class="dot"></span>
+                <span>{{ post.Date|date:"Jan 02, 2006" }}</span>
+            </div>
+            <h2 class="post-preview-title">
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html">{{ post.Title }}</a>
+            </h2>
+            <p class="post-preview-summary">{{ post.Summary }}</p>
+        </article>
+        {% empty %}
+        <div class="error-page">
+            <p class="error-text">该标签下暂无文章</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

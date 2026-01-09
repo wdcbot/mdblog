@@ -1,0 +1,88 @@
+{{ template "header.html" . }}
+        <div class="tabs">
+            <a href="/admin/posts" class="active">文章</a>
+            <a href="/admin/pages">独立页面</a>
+            <a href="/admin/categories">分类</a>
+            <a href="/admin/comments">评论</a>
+            <a href="/admin/settings">系统设置</a>
+        </div>
+
+        <h2 class="panel-title">管理文章</h2>
+        
+        <!-- 搜索和筛选 -->
+        <div class="filter-bar">
+            <input type="text" id="search-input" placeholder="搜索文章标题..." class="filter-input">
+            <select id="category-filter" class="filter-select">
+                <option value="">所有分类</option>
+                {{range .Categories}}
+                <option value="{{.Name}}">{{.Name}}</option>
+                {{end}}
+            </select>
+        </div>
+        
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="40%">标题</th>
+                        <th>作者</th>
+                        <th>分类</th>
+                        <th>日期</th>
+                        <th style="text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="posts-body">
+                    {{range .Posts}}
+                    <tr data-title="{{.Title}}" data-category="{{.Category}}">
+                        <td>
+                            <a href="/admin/edit?path={{.FilePath}}" style="color: #444; text-decoration: none; font-weight: bold;">{{.Title}}</a>
+                            {{if .Draft}}<span class="badge badge-draft">草稿</span>{{end}}
+                            <a href="/{{.Category}}/{{.Slug}}.html" target="_blank" style="color: #999; margin-left: 5px;"><i class="fa-solid fa-external-link-alt" style="font-size: 10px;"></i></a>
+                        </td>
+                        <td>admin</td>
+                        <td><a href="/category/{{.Category}}" target="_blank" style="color: #467b96;">{{.Category}}</a></td>
+                        <td>{{.Date.Format "2006-01-02"}}</td>
+                        <td style="text-align: right;">
+                            <a href="/admin/edit?path={{.FilePath}}" class="btn btn-outline btn-xs">编辑</a>
+                            <button 
+                                hx-post="/admin/delete" 
+                                hx-vals='{"path": "{{.FilePath}}"}'
+                                hx-confirm="你确认要删除这篇文章吗？"
+                                hx-target="closest tr"
+                                hx-swap="outerHTML"
+                                class="btn btn-danger btn-xs">删除</button>
+                        </td>
+                    </tr>
+                    {{end}}
+                    {{if not .Posts}}
+                    <tr>
+                        <td colspan="5" class="empty">暂无文章</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        
+        <script>
+        // 文章搜索和筛选
+        const searchInput = document.getElementById('search-input');
+        const categoryFilter = document.getElementById('category-filter');
+        const rows = document.querySelectorAll('#posts-body tr[data-title]');
+        
+        function filterPosts() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const category = categoryFilter.value;
+            
+            rows.forEach(row => {
+                const title = row.dataset.title.toLowerCase();
+                const rowCategory = row.dataset.category;
+                const matchSearch = title.includes(searchTerm);
+                const matchCategory = !category || rowCategory === category;
+                row.style.display = matchSearch && matchCategory ? '' : 'none';
+            });
+        }
+        
+        searchInput.addEventListener('input', filterPosts);
+        categoryFilter.addEventListener('change', filterPosts);
+        </script>
+{{ template "footer.html" . }}

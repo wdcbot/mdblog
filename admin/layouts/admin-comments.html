@@ -1,0 +1,78 @@
+{{ template "header.html" . }}
+        <div class="tabs">
+            <a href="/admin/posts">文章</a>
+            <a href="/admin/pages">独立页面</a>
+            <a href="/admin/categories">分类</a>
+            <a href="/admin/comments" class="active">评论 {{if .PendingCount}}<span class="badge badge-warning">{{.PendingCount}}</span>{{end}}</a>
+            <a href="/admin/settings">系统设置</a>
+        </div>
+
+        <h2 class="panel-title">评论管理</h2>
+        
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="15%">作者</th>
+                        <th width="40%">内容</th>
+                        <th>文章</th>
+                        <th>时间</th>
+                        <th>状态</th>
+                        <th style="text-align: right;">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Comments}}
+                    <tr id="comment-{{.ID}}">
+                        <td>
+                            <strong>{{.Author}}</strong>
+                            {{if .Email}}<br><small style="color:#999;">{{.Email}}</small>{{end}}
+                        </td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">{{.Content}}</td>
+                        <td><a href="/{{.PostSlug}}" target="_blank" style="color: #467b96;">{{.PostSlug}}</a></td>
+                        <td>{{.CreatedAt.Format "01-02 15:04"}}</td>
+                        <td>
+                            {{if .Approved}}
+                            <span class="badge">已通过</span>
+                            {{else}}
+                            <span class="badge badge-warning">待审核</span>
+                            {{end}}
+                        </td>
+                        <td style="text-align: right;">
+                            {{if not .Approved}}
+                            <button class="btn btn-outline btn-xs" onclick="approveComment('{{.ID}}')">通过</button>
+                            {{end}}
+                            <button class="btn btn-danger btn-xs" onclick="deleteComment('{{.ID}}')">删除</button>
+                        </td>
+                    </tr>
+                    {{end}}
+                    {{if not .Comments}}
+                    <tr>
+                        <td colspan="6" class="empty" style="text-align: center; padding: 20px; color: #999;">暂无评论</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        
+        <script>
+        function approveComment(id) {
+            fetch('/admin/comments/approve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'id=' + id
+            }).then(() => location.reload());
+        }
+        
+        function deleteComment(id) {
+            if (!confirm('确定删除这条评论？')) return;
+            fetch('/admin/comments/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'id=' + id
+            }).then(() => {
+                document.getElementById('comment-' + id).remove();
+            });
+        }
+        </script>
+{{ template "footer.html" . }}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ Post.Title }} - {{ Site.Title }}{% endblock %}
+{% block description %}{{ Post.Summary }}{% endblock %}
+{% block og_title %}{{ Post.Title }}{% endblock %}
+{% block og_description %}{{ Post.Summary }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_url %}/{{ Post.Category }}/{{ Post.Slug }}.html{% endblock %}
+
+{% block content %}
+<div class="article-wrapper">
+    <article class="article {% if Post.TOC %}has-toc{% endif %}">
+        <header class="post-header">
+            <div class="post-meta">{{ Post.Date|date:"2006年01月02日" }} · {{ Post.Category }} · 约 {{ Post.ReadingTime }} 分钟阅读</div>
+            <h1>{{ Post.Title }}</h1>
+            <div class="tags">
+                {% for tag in Post.Tags %}
+                <a href="/tag/{{ tag|urlencode }}" class="tag">#{{ tag }}</a>
+                {% endfor %}
+            </div>
+        </header>
+
+        <div class="content">
+            {{ Content|safe }}
+        </div>
+
+        <nav class="post-nav">
+            {% if PrevPost %}
+            <a href="/{{ PrevPost.Category }}/{{ PrevPost.Slug }}.html" class="post-nav-link prev">
+                <span class="post-nav-label">← 上一篇</span>
+                <span class="post-nav-title">{{ PrevPost.Title }}</span>
+            </a>
+            {% else %}
+            <span class="post-nav-link disabled"></span>
+            {% endif %}
+            
+            {% if NextPost %}
+            <a href="/{{ NextPost.Category }}/{{ NextPost.Slug }}.html" class="post-nav-link next">
+                <span class="post-nav-label">下一篇 →</span>
+                <span class="post-nav-title">{{ NextPost.Title }}</span>
+            </a>
+            {% endif %}
+        </nav>
+        
+        {% if RelatedPosts %}
+        <section class="related-posts">
+            <h3 class="related-title">相关文章</h3>
+            <div class="related-list">
+                {% for post in RelatedPosts %}
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html" class="related-item">
+                    <span class="related-item-title">{{ post.Title }}</span>
+                    <span class="related-item-meta">{{ post.Date|date:"2006-01-02" }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+        
+        <!-- 评论区 -->
+        <section class="comments-section">
+            <h3 class="comments-title">💬 评论 ({{ Comments|length }})</h3>
+            
+            <div class="comments-list">
+                {% for comment in Comments %}
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">{{ comment.Author }}</span>
+                        <span class="comment-date">{{ comment.CreatedAt|date:"2006-01-02 15:04" }}</span>
+                    </div>
+                    <div class="comment-content">{{ comment.Content }}</div>
+                </div>
+                {% empty %}
+                <p class="no-comments">暂无评论，来说两句吧 ~</p>
+                {% endfor %}
+            </div>
+            
+            <form class="comment-form" id="comment-form">
+                <h4>✍️ 发表评论</h4>
+                <input type="hidden" name="post_slug" value="{{ Post.Slug }}">
+                <div class="form-row">
+                    <input type="text" name="author" placeholder="昵称 *" required>
+                    <input type="email" name="email" placeholder="邮箱（选填，不会公开）">
+                </div>
+                <textarea name="content" placeholder="写下你的想法..." rows="4" required></textarea>
+                <div class="comment-form-footer">
+                    <button type="submit" class="btn-primary">提交评论</button>
+                    <span class="form-hint">评论需要审核后才会显示</span>
+                </div>
+            </form>
+        </section>
+    </article>
+    
+    {% if Post.TOC %}
+    <aside class="toc-sidebar">
+        <div class="toc-container">
+            <h4 class="toc-title">目录</h4>
+            <nav class="toc-nav">
+                {% for item in Post.TOC %}
+                <a href="#{{ item.ID }}" class="toc-link toc-level-{{ item.Level }}">{{ item.Title }}</a>
+                {% endfor %}
+            </nav>
+        </div>
+    </aside>
+    {% endif %}
+</div>
+{% endblock %}

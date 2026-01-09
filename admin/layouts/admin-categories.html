@@ -1,0 +1,80 @@
+{{ template "header.html" . }}
+        <div class="tabs">
+            <a href="/admin/posts">文章</a>
+            <a href="/admin/pages">独立页面</a>
+            <a href="/admin/categories" class="active">分类</a>
+            <a href="/admin/settings">系统设置</a>
+        </div>
+
+        <div class="columns">
+            <div class="column">
+                 <div class="form-group">
+                    <h3 class="panel-title">添加新分类</h3>
+                    <div class="card" style="padding: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">分类名称*</label>
+                            <input type="text" id="newCatName" class="form-control" placeholder="">
+                        </div>
+                        <button class="btn btn-primary" onclick="createCategory()">添加新分类</button>
+                    </div>
+                 </div>
+            </div>
+            
+            <div class="column">
+                <h3 class="panel-title">管理分类</h3>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>文章数</th>
+                                <th style="text-align: right;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Categories}}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: bold; color: #444;">{{.Name}}</div>
+                                </td>
+                                <td><span class="badge">{{.PostCount}}</span></td>
+                                <td style="text-align: right;">
+                                    <button onclick="renameCategory('{{.Name}}')" class="btn btn-outline btn-xs">编辑</button>
+                                    <button onclick="deleteCategory('{{.Name}}')" class="btn btn-danger btn-xs">删除</button>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        function createCategory() {
+            const name = document.getElementById('newCatName').value;
+            if (name) {
+                const formData = new FormData()
+                formData.append('name', name)
+                fetch('/admin/categories/create', { method: 'POST', body: formData })
+                .then(res => res.json()).then(d => d.status==='ok'?location.reload():alert(d.error));
+            }
+        }
+        function renameCategory(oldName) {
+            const newName = prompt("重命名分类 '" + oldName + "' 为:", oldName)
+            if (newName && newName !== oldName) {
+                const formData = new FormData()
+                formData.append('old_name', oldName); formData.append('new_name', newName)
+                fetch('/admin/categories/rename', { method: 'POST', body: formData })
+                .then(res => res.json()).then(d => d.status==='ok'?location.reload():alert(d.error));
+            }
+        }
+        function deleteCategory(name) {
+            if (confirm("确认删除分类 '" + name + "' 吗？")) {
+                const formData = new FormData(); formData.append('name', name)
+                fetch('/admin/categories/delete', { method: 'POST', body: formData })
+                .then(res => res.json()).then(d => d.status==='ok'?location.reload():alert(d.error));
+            }
+        }
+    </script>
+{{ template "footer.html" . }}

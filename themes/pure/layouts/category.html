@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ Category }} - {{ Site.Title }}{% endblock %}
+
+{% block content %}
+<div class="home">
+    <h1 class="page-title">{{ Category }}</h1>
+    <p class="category-desc">该分类共 {{ Posts|length }} 篇文章。</p>
+    <div class="divider"></div>
+
+    <div class="post-list">
+        {% for post in Posts %}
+        <article class="post-preview">
+            <div class="post-preview-meta">
+                <span>{{ post.Date|date:"Jan 02, 2006" }}</span>
+            </div>
+            <h2 class="post-preview-title">
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html">{{ post.Title }}</a>
+            </h2>
+            <p class="post-preview-summary">{{ post.Summary|default:"Dive into this article to explore more about " + post.Title + "..." }}</p>
+            <div class="post-preview-footer">
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html" class="read-more">Read Article →</a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="error-page">
+            <p class="error-text">该分类下暂时还没有文章。</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

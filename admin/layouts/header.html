@@ -1,0 +1,32 @@
+{{ define "header.html" }}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if .Title}}{{.Title}} - {{end}}mdblog Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/admin-static/admin.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <nav>
+        <div class="nav-left">
+            <a href="/admin/" class="nav-brand">MDBLOG</a>
+            <ul class="nav-menu">
+                <li><a href="/admin/" class="{{if eq .Tab "overview"}}active{{end}}">控制台</a></li>
+                <li><a href="#" onclick="showCreateModal();return false;">撰写</a></li>
+                <li><a href="/admin/posts" class="{{if or (eq .Tab "posts") (eq .Tab "pages")}}active{{end}}">管理</a></li>
+                <li><a href="/admin/settings" class="{{if or (eq .Tab "categories") (eq .Tab "settings")}}active{{end}}">设置</a></li>
+            </ul>
+        </div>
+        <div class="nav-right">
+            <div class="user-info">
+                <a href="/" target="_blank">网站</a>
+                <a href="/admin/logout">登出</a>
+            </div>
+            <button class="nav-toggle" onclick="toggleNav()">菜单</button>
+        </div>
+    </nav>
+    <main>
+{{ end }}

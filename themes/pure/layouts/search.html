@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}搜索: {{ Query }} - {{ Site.Title }}{% endblock %}
+
+{% block content %}
+<div class="home">
+    <h2 class="section-title"><i class="fa-solid fa-magnifying-glass"></i> 搜索结果: {{ Query }}</h2>
+    <div class="divider"></div>
+
+    {% for post in Posts %}
+    <div class="post-item">
+        <div class="post-meta">{{ post.Date|date:"2006年01月02日" }}</div>
+        <h2><a href="/{{ post.Category }}/{{ post.Slug }}.html">{{ post.Title }}</a></h2>
+    </div>
+    {% empty %}
+    <div class="error-page">
+        <p class="error-text">抱歉，没有找到匹配的内容。</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

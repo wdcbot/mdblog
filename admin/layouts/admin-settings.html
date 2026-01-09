@@ -1,0 +1,93 @@
+{{ template "header.html" . }}
+        <div class="tabs">
+            <a href="/admin/posts">文章</a>
+            <a href="/admin/pages">独立页面</a>
+            <a href="/admin/categories">分类</a>
+            <a href="/admin/settings" class="active">系统设置</a>
+        </div>
+
+        <h2 class="panel-title">系统设置</h2>
+        
+        <div class="columns">
+            <div class="column">
+                <div class="card" style="padding: 20px;">
+                    <form id="settingsForm" onsubmit="event.preventDefault(); saveSettings();">
+                        <div class="form-group">
+                            <label class="form-label">网站标题 (Site Title)</label>
+                            <input type="text" name="site_title" class="form-control" value="{{.Config.Site.Title}}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">网站描述 (Description)</label>
+                            <textarea name="site_desc" class="form-control" rows="3">{{.Config.Site.Description}}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Base URL</label>
+                            <input type="text" name="base_url" class="form-control" value="{{.Config.Site.BaseURL}}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">主题 (Theme)</label>
+                            <select name="theme" class="form-control">
+                                {{range .Themes}}
+                                <option value="{{.}}" {{if eq . $.Config.Theme}}selected{{end}}>{{.}}</option>
+                                {{end}}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">每页文章数 (Posts Per Page)</label>
+                            <input type="number" name="posts_per_page" class="form-control" value="{{.Config.PostsPerPage}}">
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">保存设置</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="column" style="flex: 0 0 300px;">
+                <div class="card" style="padding: 20px; background-color: #f8f9fa;">
+                    <h4>提示</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        修改主题或系统配置后，无需重启服务，更改即时生效。
+                        <br><br>
+                        <strong>当前配置文件路径:</strong><br>
+                        config.yaml
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        function saveSettings() {
+            const form = document.getElementById('settingsForm');
+            const formData = new FormData(form);
+            const btn = form.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            
+            btn.disabled = true;
+            btn.innerText = '保存中...';
+
+            fetch('/admin/settings/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    alert('设置已更新');
+                    location.reload();
+                } else {
+                    alert('保存失败: ' + data.error);
+                }
+            })
+            .catch(err => {
+                alert('网络错误');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            });
+        }
+    </script>
+{{ template "footer.html" . }}

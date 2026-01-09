@@ -1,0 +1,42 @@
+{{ template "header.html" . }}
+        <section class="overview">
+            <h2>网站概要</h2>
+            <div class="overview-list">
+                目前有 <strong>{{.PostCount}}</strong> 篇文章，
+                <strong>{{len .Categories}}</strong> 个分类，
+                <strong>{{len .Pages}}</strong> 个页面
+            </div>
+            <div class="quick-links">
+                <a href="#" onclick="showCreateModal();return false;">撰写新文章</a>
+                <a href="/admin/posts">文章管理</a>
+                <a href="/admin/categories">分类管理</a>
+                <a href="/admin/pages">页面管理</a>
+            </div>
+        </section>
+
+        <h3 class="panel-title">最近发布的文章</h3>
+        <div class="card">
+            <table>
+                <tbody>
+                    {{range .RecentPosts}}
+                    <tr>
+                        <td>
+                            <div style="font-size: 14px;">
+                                <a href="/admin/edit?path={{.FilePath}}" style="color: #444; text-decoration: none;">{{.Title}}</a>
+                            </div>
+                            <div style="font-size: 12px; color: #999; margin-top: 2px;">{{.Date.Format "2006-01-02"}}</div>
+                        </td>
+                        <td style="text-align: right;">
+                            <a href="/admin/edit?path={{.FilePath}}" class="btn btn-outline" style="padding: 2px 6px; font-size: 11px;">编辑</a>
+                        </td>
+                    </tr>
+                    {{end}}
+                    {{if not .RecentPosts}}
+                    <tr>
+                        <td colspan="2" style="text-align: center; color: #999; padding: 20px;">暂无文章</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+{{ template "footer.html" . }}
