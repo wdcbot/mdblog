@@ -3,19 +3,49 @@
 {% block title %}搜索: {{ Query }} - {{ Site.Title }}{% endblock %}
 
 {% block content %}
-<div class="home">
-    <h2 class="section-title"><i class="fa-solid fa-magnifying-glass"></i> 搜索结果: {{ Query }}</h2>
-    <div class="divider"></div>
+<div class="search-page">
+    <div class="search-header">
+        <h1 class="search-title">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            搜索结果
+        </h1>
+        <p class="search-info">关键词 "<mark>{{ Query }}</mark>" 共找到 <strong>{{ Posts|length }}</strong> 篇文章</p>
+    </div>
 
-    {% for post in Posts %}
-    <div class="post-item">
-        <div class="post-meta">{{ post.Date|date:"2006年01月02日" }}</div>
-        <h2><a href="/{{ post.Category }}/{{ post.Slug }}.html">{{ post.Title }}</a></h2>
+    <div class="search-results">
+        {% for post in Posts %}
+        <article class="search-item">
+            <div class="search-item-meta">
+                <span class="category">{{ post.Category }}</span>
+                <span class="dot"></span>
+                <span>{{ post.Date|date:"2006-01-02" }}</span>
+            </div>
+            <h2 class="search-item-title">
+                <a href="/{{ post.Category }}/{{ post.Slug }}.html" data-title="{{ post.Title }}">{{ post.Title }}</a>
+            </h2>
+            <p class="search-item-summary" data-summary="{{ post.Summary }}">{{ post.Summary }}</p>
+        </article>
+        {% empty %}
+        <div class="search-empty">
+            <div class="search-empty-icon">🔍</div>
+            <h3>没有找到相关内容</h3>
+            <p>试试其他关键词，或者浏览 <a href="/categories">所有分类</a></p>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="error-page">
-        <p class="error-text">抱歉，没有找到匹配的内容。</p>
-    </div>
-    {% endfor %}
 </div>
+
+<script>
+// 高亮搜索关键词
+const query = "{{ Query }}".toLowerCase();
+if (query) {
+    document.querySelectorAll('.search-item-title a, .search-item-summary').forEach(el => {
+        const text = el.textContent;
+        const regex = new RegExp(`(${query})`, 'gi');
+        if (regex.test(text)) {
+            el.innerHTML = text.replace(regex, '<mark>$1</mark>');
+        }
+    });
+}
+</script>
 {% endblock %}

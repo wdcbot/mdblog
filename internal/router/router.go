@@ -163,6 +163,7 @@ func SetupRouter() *gin.Engine {
 		}
 
 		content := pkg.GetCachedContent(post)
+		pkg.RecordView(post.Slug) // 记录访问
 		prev, next := pkg.GetAdjacentPosts(post)
 		related := pkg.GetRelatedPosts(post, 3)
 		comments := pkg.GetCommentsByPost(post.Slug)
@@ -248,19 +249,25 @@ func SetupRouter() *gin.Engine {
 	admin.GET("/", func(c *gin.Context) {
 		cats, _ := pkg.ListCategories()
 		pages, _ := pkg.ListPages()
-		// Dashboard 仅显示概览，不再默认传递 Posts 列表
-		// 传递部分最近文章用于"最近动态"显示
+		stats := pkg.GetStats()
+		chartLabels, chartValues := pkg.GetDailyViewsChart()
+		pendingComments := pkg.GetPendingComments()
+
 		recentPosts := pkg.Posts
 		if len(recentPosts) > 5 {
 			recentPosts = recentPosts[:5]
 		}
 
 		err := theme.AdminTemplates.ExecuteTemplate(c.Writer, "admin-index.html", gin.H{
-			"RecentPosts": recentPosts,
-			"Categories":  cats,
-			"Pages":       pages,
-			"PostCount":   len(pkg.Posts),
-			"Tab":         "overview",
+			"RecentPosts":     recentPosts,
+			"Categories":      cats,
+			"Pages":           pages,
+			"PostCount":       len(pkg.Posts),
+			"Stats":           stats,
+			"ChartLabels":     chartLabels,
+			"ChartValues":     chartValues,
+			"PendingComments": len(pendingComments),
+			"Tab":             "overview",
 		})
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -392,6 +399,28 @@ func SetupRouter() *gin.Engine {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	// 批量删除
+	admin.POST("/batch-delete", func(c *gin.Context) {
+		var req struct {
+			Paths []string `json:"paths"`
+		}
+		if err := c.BindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+			return
+		}
+
+		for _, path := range req.Paths {
+			if !pkg.IsPathSafe(path) {
+				continue
+			}
+			pkg.DeletePostFile(path)
+		}
+
+		pkg.LoadAllPosts()
+		pkg.InitSearchIndex()
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "deleted": len(req.Paths)})
 	})
 
 	admin.GET("/edit", func(c *gin.Context) {

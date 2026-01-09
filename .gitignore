@@ -18,7 +18,7 @@
 .env
 mdblog
 blog.bleve/
-data/comments.json
+data/
 tmp/
 
 # IDEs

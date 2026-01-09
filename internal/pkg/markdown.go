@@ -27,6 +27,7 @@ type Post struct {
 	Summary     string
 	FilePath    string
 	ReadingTime int       // 阅读时间（分钟）
+	WordCount   int       // 字数统计
 	TOC         []TOCItem // 文章目录
 	Draft       bool      // 是否为草稿
 }
@@ -134,8 +135,8 @@ func ParseMarkdownFile(path string) (*Post, error) {
 	// 自动生成摘要
 	post.Summary = generateSummary(post.Content, 120)
 
-	// 计算阅读时间
-	post.ReadingTime = calculateReadingTime(post.Content)
+	// 计算阅读时间和字数
+	post.WordCount, post.ReadingTime = calculateWordStats(post.Content)
 
 	// 生成目录并添加标题 ID
 	post.Content, post.TOC = generateTOC(post.Content)
@@ -223,9 +224,8 @@ func DeletePostFile(path string) error {
 }
 
 
-// calculateReadingTime 计算阅读时间（分钟）
-// 中文按 300 字/分钟，英文按 200 词/分钟
-func calculateReadingTime(htmlContent string) int {
+// calculateWordStats 计算字数和阅读时间
+func calculateWordStats(htmlContent string) (wordCount int, readingTime int) {
 	// 移除 HTML 标签
 	re := regexp.MustCompile(`<[^>]*>`)
 	text := re.ReplaceAllString(htmlContent, "")
@@ -243,12 +243,17 @@ func calculateReadingTime(htmlContent string) int {
 	words := regexp.MustCompile(`[a-zA-Z]+`).FindAllString(text, -1)
 	englishWords := len(words)
 
-	// 计算阅读时间
+	// 总字数
+	wordCount = chineseCount + englishWords
+
+	// 计算阅读时间（中文 300 字/分钟，英文 200 词/分钟）
 	minutes := float64(chineseCount)/300 + float64(englishWords)/200
 	if minutes < 1 {
-		return 1
+		readingTime = 1
+	} else {
+		readingTime = int(minutes + 0.5)
 	}
-	return int(minutes + 0.5) // 四舍五入
+	return
 }
 
 

@@ -1235,3 +1235,238 @@ footer {
         text-align: center;
     }
 }
+
+
+/* 404 Page */
+.error-page-wrapper {
+    text-align: center;
+    padding: 4rem 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.error-illustration {
+    margin-bottom: 2rem;
+}
+
+.error-code-big {
+    font-size: 8rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    color: var(--text-meta);
+    line-height: 1;
+    opacity: 0.3;
+}
+
+.error-code-big .zero {
+    display: inline-block;
+    color: var(--accent);
+    opacity: 1;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.error-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem;
+    color: var(--text-main);
+}
+
+.error-desc {
+    color: var(--text-meta);
+    margin: 0 0 2rem;
+    font-size: 1rem;
+}
+
+.error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.error-actions .btn-primary,
+.error-actions .btn-outline {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.error-actions .btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.error-actions .btn-primary:hover {
+    background: var(--accent-hover);
+    color: #fff;
+}
+
+.error-actions .btn-outline {
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    background: var(--bg-card);
+}
+
+.error-actions .btn-outline:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.error-suggestions {
+    text-align: left;
+    background: var(--surface);
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.error-suggestions p {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.9rem;
+}
+
+.error-suggestions ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--text-meta);
+    font-size: 0.9rem;
+}
+
+.error-suggestions li {
+    margin-bottom: 0.25rem;
+}
+
+
+/* Search Page */
+.search-page {
+    padding: 1rem 0;
+}
+
+.search-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.search-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-title i {
+    color: var(--accent);
+}
+
+.search-info {
+    color: var(--text-meta);
+    margin: 0;
+}
+
+.search-info mark {
+    background: var(--accent);
+    color: #fff;
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+}
+
+.search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-item {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    transition: all 0.2s;
+}
+
+.search-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+}
+
+.search-item-meta {
+    font-size: 0.8rem;
+    color: var(--text-meta);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-item-meta .category {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.search-item-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+}
+
+.search-item-title a {
+    color: var(--text-main);
+}
+
+.search-item-title a:hover {
+    color: var(--accent);
+}
+
+.search-item-summary {
+    color: var(--text-meta);
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.search-item-summary mark,
+.search-item-title mark {
+    background: rgba(37, 99, 235, 0.2);
+    color: var(--accent);
+    padding: 0.1em 0.2em;
+    border-radius: 3px;
+}
+
+.search-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+}
+
+.search-empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.search-empty h3 {
+    margin: 0 0 0.5rem;
+    color: var(--text-main);
+}
+
+.search-empty p {
+    color: var(--text-meta);
+    margin: 0;
+}
+
+.search-empty a {
+    color: var(--accent);
+}

@@ -1,42 +1,115 @@
 {{ template "header.html" . }}
-        <section class="overview">
-            <h2>网站概要</h2>
-            <div class="overview-list">
-                目前有 <strong>{{.PostCount}}</strong> 篇文章，
-                <strong>{{len .Categories}}</strong> 个分类，
-                <strong>{{len .Pages}}</strong> 个页面
+        <section class="dashboard">
+            <h2>控制台</h2>
+            
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{.PostCount}}</div>
+                        <div class="stat-label">文章总数</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📁</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{len .Categories}}</div>
+                        <div class="stat-label">分类数</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{.Stats.TotalViews}}</div>
+                        <div class="stat-label">总访问量</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{.Stats.TodayViews}}</div>
+                        <div class="stat-label">今日访问</div>
+                    </div>
+                </div>
             </div>
-            <div class="quick-links">
-                <a href="#" onclick="showCreateModal();return false;">撰写新文章</a>
-                <a href="/admin/posts">文章管理</a>
-                <a href="/admin/categories">分类管理</a>
-                <a href="/admin/pages">页面管理</a>
+            
+            <div class="dashboard-grid">
+                <!-- 访问趋势图 -->
+                <div class="dashboard-card">
+                    <h3 class="card-title">最近 7 天访问趋势</h3>
+                    <canvas id="viewsChart" height="200"></canvas>
+                </div>
+                
+                <!-- 快捷操作 -->
+                <div class="dashboard-card">
+                    <h3 class="card-title">快捷操作</h3>
+                    <div class="quick-actions">
+                        <a href="#" onclick="showCreateModal();return false;" class="quick-action-btn">
+                            <i class="fa-solid fa-pen"></i> 撰写文章
+                        </a>
+                        <a href="/admin/posts" class="quick-action-btn">
+                            <i class="fa-solid fa-list"></i> 管理文章
+                        </a>
+                        <a href="/admin/comments" class="quick-action-btn">
+                            <i class="fa-solid fa-comments"></i> 评论管理
+                            {{if .PendingComments}}<span class="badge badge-warning">{{.PendingComments}}</span>{{end}}
+                        </a>
+                        <a href="/admin/settings" class="quick-action-btn">
+                            <i class="fa-solid fa-cog"></i> 系统设置
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最近文章 -->
+            <div class="dashboard-card full-width">
+                <h3 class="card-title">最近发布</h3>
+                <table class="simple-table">
+                    <tbody>
+                        {{range .RecentPosts}}
+                        <tr>
+                            <td>
+                                <a href="/admin/edit?path={{.FilePath}}">{{.Title}}</a>
+                                {{if .Draft}}<span class="badge badge-draft">草稿</span>{{end}}
+                            </td>
+                            <td style="color: #999;">{{.Category}}</td>
+                            <td style="color: #999; text-align: right;">{{.Date.Format "01-02"}}</td>
+                        </tr>
+                        {{end}}
+                        {{if not .RecentPosts}}
+                        <tr><td colspan="3" style="text-align: center; color: #999;">暂无文章</td></tr>
+                        {{end}}
+                    </tbody>
+                </table>
             </div>
         </section>
-
-        <h3 class="panel-title">最近发布的文章</h3>
-        <div class="card">
-            <table>
-                <tbody>
-                    {{range .RecentPosts}}
-                    <tr>
-                        <td>
-                            <div style="font-size: 14px;">
-                                <a href="/admin/edit?path={{.FilePath}}" style="color: #444; text-decoration: none;">{{.Title}}</a>
-                            </div>
-                            <div style="font-size: 12px; color: #999; margin-top: 2px;">{{.Date.Format "2006-01-02"}}</div>
-                        </td>
-                        <td style="text-align: right;">
-                            <a href="/admin/edit?path={{.FilePath}}" class="btn btn-outline" style="padding: 2px 6px; font-size: 11px;">编辑</a>
-                        </td>
-                    </tr>
-                    {{end}}
-                    {{if not .RecentPosts}}
-                    <tr>
-                        <td colspan="2" style="text-align: center; color: #999; padding: 20px;">暂无文章</td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
-        </div>
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+        const ctx = document.getElementById('viewsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [{{range $i, $v := .ChartLabels}}{{if $i}},{{end}}'{{$v}}'{{end}}],
+                datasets: [{
+                    label: '访问量',
+                    data: [{{range $i, $v := .ChartValues}}{{if $i}},{{end}}{{$v}}{{end}}],
+                    borderColor: '#467b96',
+                    backgroundColor: 'rgba(70, 123, 150, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+        </script>
 {{ template "footer.html" . }}

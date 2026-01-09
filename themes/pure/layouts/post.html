@@ -11,7 +11,7 @@
 <div class="article-wrapper">
     <article class="article {% if Post.TOC %}has-toc{% endif %}">
         <header class="post-header">
-            <div class="post-meta">{{ Post.Date|date:"2006年01月02日" }} · {{ Post.Category }} · 约 {{ Post.ReadingTime }} 分钟阅读</div>
+            <div class="post-meta">{{ Post.Date|date:"2006年01月02日" }} · {{ Post.Category }} · {{ Post.WordCount }} 字 · 约 {{ Post.ReadingTime }} 分钟</div>
             <h1>{{ Post.Title }}</h1>
             <div class="tags">
                 {% for tag in Post.Tags %}

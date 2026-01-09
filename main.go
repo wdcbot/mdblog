@@ -33,6 +33,9 @@ func main() {
 	// 5. Initialize Comments
 	pkg.InitComments()
 
+	// 6. Initialize Stats
+	pkg.InitStats()
+
 	// 5. Load Theme Templates
 	theme.InitPongo2()         // 前台 Pongo2
 	theme.LoadAdminTemplates() // 后台 原生模板

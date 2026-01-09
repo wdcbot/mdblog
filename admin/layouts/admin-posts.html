@@ -18,13 +18,18 @@
                 <option value="{{.Name}}">{{.Name}}</option>
                 {{end}}
             </select>
+            <div class="batch-actions" id="batch-actions" style="display: none;">
+                <span class="batch-count">已选 <strong id="selected-count">0</strong> 篇</span>
+                <button class="btn btn-danger btn-sm" onclick="batchDelete()">批量删除</button>
+            </div>
         </div>
         
         <div class="card">
             <table>
                 <thead>
                     <tr>
-                        <th width="40%">标题</th>
+                        <th width="30"><input type="checkbox" id="select-all" onclick="toggleSelectAll()"></th>
+                        <th width="35%">标题</th>
                         <th>作者</th>
                         <th>分类</th>
                         <th>日期</th>
@@ -33,7 +38,8 @@
                 </thead>
                 <tbody id="posts-body">
                     {{range .Posts}}
-                    <tr data-title="{{.Title}}" data-category="{{.Category}}">
+                    <tr data-title="{{.Title}}" data-category="{{.Category}}" data-path="{{.FilePath}}">
+                        <td><input type="checkbox" class="post-checkbox" onchange="updateBatchActions()"></td>
                         <td>
                             <a href="/admin/edit?path={{.FilePath}}" style="color: #444; text-decoration: none; font-weight: bold;">{{.Title}}</a>
                             {{if .Draft}}<span class="badge badge-draft">草稿</span>{{end}}
@@ -56,7 +62,7 @@
                     {{end}}
                     {{if not .Posts}}
                     <tr>
-                        <td colspan="5" class="empty">暂无文章</td>
+                        <td colspan="6" class="empty">暂无文章</td>
                     </tr>
                     {{end}}
                 </tbody>
@@ -84,5 +90,54 @@
         
         searchInput.addEventListener('input', filterPosts);
         categoryFilter.addEventListener('change', filterPosts);
+        
+        // 批量操作
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            document.querySelectorAll('.post-checkbox').forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+            updateBatchActions();
+        }
+        
+        function updateBatchActions() {
+            const checked = document.querySelectorAll('.post-checkbox:checked');
+            const batchActions = document.getElementById('batch-actions');
+            const selectedCount = document.getElementById('selected-count');
+            
+            if (checked.length > 0) {
+                batchActions.style.display = 'flex';
+                selectedCount.textContent = checked.length;
+            } else {
+                batchActions.style.display = 'none';
+            }
+        }
+        
+        function batchDelete() {
+            const checked = document.querySelectorAll('.post-checkbox:checked');
+            if (checked.length === 0) return;
+            
+            if (!confirm(`确定要删除选中的 ${checked.length} 篇文章吗？此操作不可恢复！`)) return;
+            
+            const paths = [];
+            checked.forEach(cb => {
+                const row = cb.closest('tr');
+                paths.push(row.dataset.path);
+            });
+            
+            fetch('/admin/batch-delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({paths: paths})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    location.reload();
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            });
+        }
         </script>
 {{ template "footer.html" . }}
