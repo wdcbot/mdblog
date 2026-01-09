@@ -18,6 +18,7 @@
 .env
 mdblog
 blog.bleve/
+data/comments.json
 tmp/
 
 # IDEs
@@ -25,3 +26,6 @@ tmp/
 .vscode/
 *.swp
 *.swo
+
+# macOS
+.DS_Store
