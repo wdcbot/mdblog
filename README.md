@@ -6,6 +6,11 @@
 
 **预览地址：** https://wdc.zeabur.app
 
+## 分支说明
+
+- `main` - 包含示例文章和文档，用于预览和学习
+- `template` - 干净的模板分支，**个人使用请 Fork 此分支**
+
 ## 特性
 
 - 📄 Markdown 文件存储
@@ -18,7 +23,7 @@
 
 ## 快速部署到 Zeabur
 
-1. Fork 这个仓库到你的 GitHub
+1. Fork 这个仓库的 `template` 分支到你的 GitHub
 2. 去 [Zeabur](https://zeabur.com) 用 GitHub 登录
 3. 创建项目 → 选择「共享集群」→ 选择「香港」地区
 4. 添加服务 → Git → 选择你 fork 的仓库
@@ -27,7 +32,8 @@
 ## 本地运行
 
 ```bash
-git clone https://github.com/wdcbot/mdblog.git
+# 使用干净的 template 分支
+git clone -b template https://github.com/wdcbot/mdblog.git
 cd mdblog
 go run main.go
 ```
