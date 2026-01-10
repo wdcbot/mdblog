@@ -2,7 +2,7 @@
 
 轻量级 Markdown 博客系统，无数据库依赖。
 
-> 本项目基于 [TwoThreeWang/mdblog](https://github.com/TwoThreeWang/mdblog) 二次开发，进行了大量功能增强和优化。
+**预览地址：** https://wdc.zeabur.app
 
 ## 特性
 
@@ -20,9 +20,7 @@
 2. 去 [Zeabur](https://zeabur.com) 用 GitHub 登录
 3. 创建项目 → 选择「共享集群」→ 选择「香港」地区
 4. 添加服务 → Git → 选择你 fork 的仓库
-5. 等待构建完成，自动获得访问域名
-
-每次 push 代码，Zeabur 会自动重新部署。
+5. 等待构建完成，生成域名即可访问
 
 ## 本地运行
 
@@ -35,48 +33,9 @@ go run main.go
 - 前台：http://localhost:8080
 - 后台：http://localhost:8080/admin（默认 admin / admin888）
 
-## 写文章
+## 文档
 
-在 `content/blog/分类名/` 下创建 `.md` 文件：
-
-```markdown
----
-title: "文章标题"
-date: 2026-01-10
-tags: [标签1, 标签2]
----
-
-正文内容...
-```
-
-## 配置
-
-编辑 `config.yaml`：
-
-```yaml
-server:
-    port: 8080
-
-admin:
-    username: admin
-    password: 你的密码
-
-site:
-    title: 我的博客
-    description: 博客描述
-```
-
-## 目录结构
-
-```
-mdblog/
-├── content/blog/    # 博客文章
-├── content/page/    # 独立页面
-├── data/            # 评论、统计
-├── uploads/         # 上传图片
-├── config.yaml      # 配置文件
-└── main.go
-```
+详细使用说明请访问：https://wdc.zeabur.app
 
 ## License
 
