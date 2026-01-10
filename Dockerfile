@@ -4,7 +4,9 @@ LABEL "language"="go"
 
 WORKDIR /build
 
-RUN apk add --no-cache git
+# 使用国内镜像源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache git
 
 COPY go.mod go.sum ./
 RUN go mod download
@@ -18,7 +20,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
-RUN apk --no-cache add ca-certificates tzdata
+# 使用国内镜像源
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk --no-cache add ca-certificates tzdata
 
 ENV TZ=Asia/Shanghai
 
