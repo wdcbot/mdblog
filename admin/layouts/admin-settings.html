@@ -10,84 +10,399 @@
         
         <div class="columns">
             <div class="column">
+                <!-- 基础设置 -->
                 <div class="card" style="padding: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-globe"></i> 基础设置
+                    </h4>
                     <form id="settingsForm" onsubmit="event.preventDefault(); saveSettings();">
                         <div class="form-group">
-                            <label class="form-label">网站标题 (Site Title)</label>
+                            <label class="form-label">网站标题</label>
                             <input type="text" name="site_title" class="form-control" value="{{.Config.Site.Title}}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">网站描述 (Description)</label>
-                            <textarea name="site_desc" class="form-control" rows="3">{{.Config.Site.Description}}</textarea>
+                            <label class="form-label">网站描述</label>
+                            <textarea name="site_desc" class="form-control" rows="2">{{.Config.Site.Description}}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">关键词 <span style="color: #9ca3af; font-weight: normal;">(SEO)</span></label>
+                            <input type="text" name="keywords" class="form-control" value="{{.Config.Site.Keywords}}" placeholder="用逗号分隔">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">作者</label>
+                            <input type="text" name="author" class="form-control" value="{{.Config.Site.Author}}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Base URL</label>
                             <input type="text" name="base_url" class="form-control" value="{{.Config.Site.BaseURL}}">
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">主题 (Theme)</label>
-                            <select name="theme" class="form-control">
-                                {{range .Themes}}
-                                <option value="{{.}}" {{if eq . $.Config.Theme}}selected{{end}}>{{.}}</option>
-                                {{end}}
-                            </select>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">主题</label>
+                                <select name="theme" class="form-control">
+                                    {{range .Themes}}
+                                    <option value="{{.}}" {{if eq . $.Config.Theme}}selected{{end}}>{{.}}</option>
+                                    {{end}}
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">每页文章数</label>
+                                <input type="number" name="posts_per_page" class="form-control" value="{{.Config.PostsPerPage}}" min="1" max="50">
+                            </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label class="form-label">每页文章数 (Posts Per Page)</label>
-                            <input type="number" name="posts_per_page" class="form-control" value="{{.Config.PostsPerPage}}">
-                        </div>
-
                         <div style="margin-top: 20px;">
                             <button type="submit" class="btn btn-primary">保存设置</button>
                         </div>
                     </form>
                 </div>
+                
+                <!-- 外观设置 -->
+                <div class="card" style="padding: 20px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-palette"></i> 外观设置
+                    </h4>
+                    <form id="appearanceForm" onsubmit="event.preventDefault(); saveAppearance();">
+                        <div class="form-group">
+                            <label class="form-label">首页标语 (Hero Title)</label>
+                            <input type="text" name="hero_title" class="form-control" value="{{.Config.Site.HeroTitle}}" placeholder="支持 HTML，如 Design. <span class='accent'>Code.</span> Life.">
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">默认主题模式</label>
+                                <select name="default_theme" class="form-control">
+                                    <option value="auto" {{if eq .Config.Site.DefaultTheme "auto"}}selected{{end}}>跟随系统</option>
+                                    <option value="light" {{if eq .Config.Site.DefaultTheme "light"}}selected{{end}}>浅色</option>
+                                    <option value="dark" {{if eq .Config.Site.DefaultTheme "dark"}}selected{{end}}>深色</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">主题色</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="color" name="accent_color" value="{{.Config.Site.AccentColor}}" style="width: 50px; height: 38px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                                    <input type="text" name="accent_color_text" class="form-control" value="{{.Config.Site.AccentColor}}" style="flex: 1;" onchange="this.form.accent_color.value = this.value" oninput="this.form.accent_color.value = this.value">
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Favicon URL</label>
+                                <input type="text" name="favicon" class="form-control" value="{{.Config.Site.Favicon}}" placeholder="/static/favicon.ico">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">Logo URL</label>
+                                <input type="text" name="logo" class="form-control" value="{{.Config.Site.Logo}}" placeholder="留空显示文字标题">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="form-group" style="flex: 0 0 120px;">
+                                <label class="form-label">Logo 高度 (px)</label>
+                                <input type="number" name="logo_height" class="form-control" value="{{if .Config.Site.LogoHeight}}{{.Config.Site.LogoHeight}}{{else}}36{{end}}" min="20" max="80" placeholder="36">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label class="form-label">&nbsp;</label>
+                                <p style="margin: 0; font-size: 0.85rem; color: #6b7280; line-height: 38px;">建议高度 28-48px，宽度会自动按比例缩放</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">保存外观</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 功能开关 -->
+                <div class="card" style="padding: 20px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-toggle-on"></i> 功能开关
+                    </h4>
+                    <form id="featuresForm" onsubmit="event.preventDefault(); saveFeatures();">
+                        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="comments_enabled" {{if .Config.Site.CommentsEnabled}}checked{{end}}>
+                                <span>启用评论</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="toc_enabled" {{if .Config.Site.TOCEnabled}}checked{{end}}>
+                                <span>显示文章目录</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" name="reading_time_enabled" {{if .Config.Site.ReadingTimeEnabled}}checked{{end}}>
+                                <span>显示阅读时间</span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">保存功能</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 页脚设置 -->
+                <div class="card" style="padding: 20px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-shoe-prints"></i> 页脚设置
+                    </h4>
+                    <form id="footerForm" onsubmit="event.preventDefault(); saveFooter();">
+                        <div class="form-group">
+                            <label class="form-label">版权信息</label>
+                            <input type="text" name="copyright" class="form-control" value="{{.Config.Site.Footer.Copyright}}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">ICP 备案号</label>
+                            <input type="text" name="icp" class="form-control" value="{{.Config.Site.Footer.ICP}}" placeholder="如：京ICP备xxxxxxxx号">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">社交链接</label>
+                            <div id="footer-links">
+                                {{range $i, $link := .Config.Site.Footer.Links}}
+                                <div class="footer-link-item" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;">
+                                    <input type="text" name="link_name[]" class="form-control" value="{{$link.Name}}" placeholder="名称" style="width: 100px;">
+                                    <input type="text" name="link_url[]" class="form-control" value="{{$link.URL}}" placeholder="URL" style="flex: 1;">
+                                    <input type="text" name="link_icon[]" class="form-control" value="{{$link.Icon}}" placeholder="图标 (如 fa-brands fa-github)" style="width: 200px;">
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()" style="color: #ef4444;">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                                {{end}}
+                            </div>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="addFooterLink()">
+                                <i class="fa-solid fa-plus"></i> 添加链接
+                            </button>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">保存页脚</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 统计代码 -->
+                <div class="card" style="padding: 20px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-chart-line"></i> 统计代码
+                    </h4>
+                    <form id="analyticsForm" onsubmit="event.preventDefault(); saveAnalytics();">
+                        <div class="form-group">
+                            <label class="form-label">第三方统计代码 <span style="color: #9ca3af; font-weight: normal;">(如 Google Analytics)</span></label>
+                            <textarea name="analytics" class="form-control" rows="4" placeholder="粘贴统计代码，将插入到 </head> 前">{{.Config.Site.Analytics}}</textarea>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">保存统计</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 数据备份/恢复 -->
+                <div class="card" style="padding: 20px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-database"></i> 数据备份与恢复
+                    </h4>
+                    
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 200px; padding: 1rem; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+                            <h5 style="margin: 0 0 0.5rem; color: #166534;">
+                                <i class="fa-solid fa-download"></i> 导出备份
+                            </h5>
+                            <p style="font-size: 0.85rem; color: #6b7280; margin: 0 0 1rem;">
+                                将所有文章、页面、评论、配置打包下载
+                            </p>
+                            <a href="/admin/backup" class="btn btn-primary btn-sm" style="width: 100%;">
+                                <i class="fa-solid fa-file-zipper"></i> 下载备份
+                            </a>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 200px; padding: 1rem; background: #fef3c7; border-radius: 8px; border: 1px solid #fcd34d;">
+                            <h5 style="margin: 0 0 0.5rem; color: #92400e;">
+                                <i class="fa-solid fa-upload"></i> 恢复数据
+                            </h5>
+                            <p style="font-size: 0.85rem; color: #6b7280; margin: 0 0 1rem;">
+                                上传备份文件恢复数据（会覆盖现有数据）
+                            </p>
+                            <input type="file" id="restore-file" accept=".zip" style="display: none;">
+                            <button class="btn btn-outline btn-sm" style="width: 100%;" onclick="document.getElementById('restore-file').click()">
+                                <i class="fa-solid fa-file-import"></i> 选择备份文件
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="restore-status" style="margin-top: 1rem; display: none;">
+                        <div style="padding: 1rem; background: #f3f4f6; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                <span id="restore-text">正在恢复数据...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="column" style="flex: 0 0 300px;">
-                <div class="card" style="padding: 20px; background-color: #f8f9fa;">
-                    <h4>提示</h4>
+            
+            <div class="column" style="flex: 0 0 280px;">
+                <div class="card" style="padding: 20px; background-color: #f8f9fa; position: sticky; top: 20px;">
+                    <h4><i class="fa-solid fa-lightbulb"></i> 提示</h4>
                     <p style="font-size: 13px; color: #666; line-height: 1.6;">
-                        修改主题或系统配置后，无需重启服务，更改即时生效。
+                        修改配置后无需重启服务，更改即时生效。
                         <br><br>
-                        <strong>当前配置文件路径:</strong><br>
-                        config.yaml
+                        <strong>配置文件路径:</strong><br>
+                        <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px;">config.yaml</code>
+                        <br><br>
+                        <strong>图标参考:</strong><br>
+                        <a href="https://fontawesome.com/icons" target="_blank" style="color: #2563eb;">Font Awesome 图标库</a>
+                    </p>
+                </div>
+                
+                <div class="card" style="padding: 20px; background-color: #fef2f2; margin-top: 1rem;">
+                    <h4 style="color: #dc2626;"><i class="fa-solid fa-triangle-exclamation"></i> 恢复注意</h4>
+                    <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                        恢复数据会<strong>覆盖</strong>现有的文章、页面、评论和配置。
+                        <br><br>
+                        建议在恢复前先下载当前数据的备份。
                     </p>
                 </div>
             </div>
         </div>
 
     <script>
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'admin-toast show ' + type;
+            toast.textContent = message;
+            toast.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; z-index: 9999; font-weight: 500;';
+            if (type === 'success') toast.style.background = '#10b981';
+            else if (type === 'error') toast.style.background = '#ef4444';
+            else toast.style.background = '#3b82f6';
+            toast.style.color = '#fff';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // 基础设置
         function saveSettings() {
             const form = document.getElementById('settingsForm');
             const formData = new FormData(form);
-            const btn = form.querySelector('button[type="submit"]');
+            submitForm('/admin/settings/update', formData, form.querySelector('button[type="submit"]'));
+        }
+        
+        // 外观设置
+        function saveAppearance() {
+            const form = document.getElementById('appearanceForm');
+            const formData = new FormData(form);
+            // 同步颜色值
+            formData.set('accent_color', form.accent_color.value);
+            submitForm('/admin/settings/appearance', formData, form.querySelector('button[type="submit"]'));
+        }
+        
+        // 功能开关
+        function saveFeatures() {
+            const form = document.getElementById('featuresForm');
+            const formData = new FormData(form);
+            // checkbox 需要特殊处理
+            formData.set('comments_enabled', form.comments_enabled.checked ? 'true' : 'false');
+            formData.set('toc_enabled', form.toc_enabled.checked ? 'true' : 'false');
+            formData.set('reading_time_enabled', form.reading_time_enabled.checked ? 'true' : 'false');
+            submitForm('/admin/settings/features', formData, form.querySelector('button[type="submit"]'));
+        }
+        
+        // 页脚设置
+        function saveFooter() {
+            const form = document.getElementById('footerForm');
+            const formData = new FormData(form);
+            submitForm('/admin/settings/footer', formData, form.querySelector('button[type="submit"]'));
+        }
+        
+        // 统计代码
+        function saveAnalytics() {
+            const form = document.getElementById('analyticsForm');
+            const formData = new FormData(form);
+            submitForm('/admin/settings/analytics', formData, form.querySelector('button[type="submit"]'));
+        }
+        
+        function submitForm(url, formData, btn) {
             const originalText = btn.innerText;
-            
             btn.disabled = true;
             btn.innerText = '保存中...';
 
-            fetch('/admin/settings/update', {
-                method: 'POST',
-                body: formData
-            })
+            fetch(url, { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'ok') {
-                    alert('设置已更新');
-                    location.reload();
+                    showToast('保存成功', 'success');
                 } else {
-                    alert('保存失败: ' + data.error);
+                    showToast('保存失败: ' + data.error, 'error');
                 }
             })
-            .catch(err => {
-                alert('网络错误');
-            })
+            .catch(err => showToast('网络错误', 'error'))
             .finally(() => {
                 btn.disabled = false;
                 btn.innerText = originalText;
             });
         }
+        
+        // 添加页脚链接
+        function addFooterLink() {
+            const container = document.getElementById('footer-links');
+            const item = document.createElement('div');
+            item.className = 'footer-link-item';
+            item.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;';
+            item.innerHTML = `
+                <input type="text" name="link_name[]" class="form-control" placeholder="名称" style="width: 100px;">
+                <input type="text" name="link_url[]" class="form-control" placeholder="URL" style="flex: 1;">
+                <input type="text" name="link_icon[]" class="form-control" placeholder="图标 (如 fa-brands fa-github)" style="width: 200px;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="this.parentElement.remove()" style="color: #ef4444;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(item);
+        }
+        
+        // 颜色选择器同步
+        document.querySelector('input[name="accent_color"]').addEventListener('input', function() {
+            document.querySelector('input[name="accent_color_text"]').value = this.value;
+        });
+        
+        // 恢复数据
+        document.getElementById('restore-file').addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+            
+            if (!file.name.endsWith('.zip')) {
+                showToast('请选择 .zip 格式的备份文件', 'error');
+                return;
+            }
+            
+            if (!confirm('确定要恢复数据吗？这将覆盖现有的所有数据！')) {
+                this.value = '';
+                return;
+            }
+            
+            const status = document.getElementById('restore-status');
+            const statusText = document.getElementById('restore-text');
+            status.style.display = 'block';
+            statusText.textContent = '正在上传并恢复数据...';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/admin/restore', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    statusText.innerHTML = '<i class="fa-solid fa-check" style="color: #10b981;"></i> 数据恢复成功！页面将自动刷新...';
+                    showToast('数据恢复成功', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    statusText.innerHTML = '<i class="fa-solid fa-xmark" style="color: #ef4444;"></i> 恢复失败: ' + data.error;
+                    showToast('恢复失败: ' + data.error, 'error');
+                }
+            })
+            .catch(err => {
+                statusText.innerHTML = '<i class="fa-solid fa-xmark" style="color: #ef4444;"></i> 网络错误';
+                showToast('网络错误', 'error');
+            });
+            
+            this.value = '';
+        });
     </script>
 {{ template "footer.html" . }}

@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  mdblog:
+    build: .
+    container_name: mdblog
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./content:/app/content
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./config.yaml:/app/config.yaml

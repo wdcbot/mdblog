@@ -5,7 +5,7 @@
     {% if not Query %}
     <section class="hero">
         <h1 class="hero-title">
-            Design. <span class="accent">Code.</span> Life.
+            {% if Site.HeroTitle %}{{ Site.HeroTitle|safe }}{% else %}{{ Site.Title }}{% endif %}
         </h1>
         <p class="hero-desc">{{ Site.Description }}</p>
     </section>
@@ -16,8 +16,9 @@
 
     <div class="post-list">
         {% for post in Posts %}
-        <article class="post-preview">
+        <article class="post-preview {% if post.Pinned %}pinned{% endif %}">
             <div class="post-preview-meta">
+                {% if post.Pinned %}<span class="pin-badge"><i class="fa-solid fa-thumbtack"></i> 置顶</span>{% endif %}
                 <span class="category">{{ post.Category }}</span>
                 <span class="dot"></span>
                 <span>{{ post.Date|date:"Jan 02, 2006" }}</span>

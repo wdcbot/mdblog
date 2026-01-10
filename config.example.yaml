@@ -7,7 +7,7 @@ server:
 
 admin:
     username: admin
-    password: admin888
+    password: change_this_password
     jwt_secret: change_this_to_random_string
 
 site:
@@ -15,7 +15,7 @@ site:
     description: 一个轻量级的 Markdown 博客系统
     keywords: 博客,Markdown,Go
     author: ""
-    base_url: https://wdcbot.github.io/mdblog
+    base_url: http://localhost:8080
     
     accent_color: "#2563eb"
     default_theme: auto

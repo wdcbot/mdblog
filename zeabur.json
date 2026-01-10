@@ -1,0 +1,8 @@
+{
+  "build": {
+    "command": "go build -o mdblog"
+  },
+  "start": {
+    "command": "./mdblog"
+  }
+}

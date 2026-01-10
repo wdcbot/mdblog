@@ -61,8 +61,11 @@ func LoadAllPosts() {
 		log.Printf("Error walking content directory: %v", err)
 	}
 
-	// 按时间倒序排列
+	// 按置顶和时间排序：置顶优先，然后按时间倒序
 	sort.Slice(Posts, func(i, j int) bool {
+		if Posts[i].Pinned != Posts[j].Pinned {
+			return Posts[i].Pinned // 置顶的排前面
+		}
 		return Posts[i].Date.After(Posts[j].Date)
 	})
 }

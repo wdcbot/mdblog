@@ -30,6 +30,7 @@ type Post struct {
 	WordCount   int       // 字数统计
 	TOC         []TOCItem // 文章目录
 	Draft       bool      // 是否为草稿
+	Pinned      bool      // 是否置顶
 }
 
 // TOCItem 目录项
@@ -93,6 +94,11 @@ func ParseMarkdownFile(path string) (*Post, error) {
 	// 解析草稿状态
 	if draft, ok := metaData["draft"].(bool); ok {
 		post.Draft = draft
+	}
+
+	// 解析置顶状态
+	if pinned, ok := metaData["pinned"].(bool); ok {
+		post.Pinned = pinned
 	}
 
 	// Category Logic: Calculate relative path from "content/blog"
@@ -292,4 +298,14 @@ func generateTOC(htmlContent string) (string, []TOCItem) {
 	})
 	
 	return result, toc
+}
+
+// RenderMarkdownPreview 渲染 Markdown 内容为 HTML（用于预览）
+func RenderMarkdownPreview(content string) string {
+	var buf bytes.Buffer
+	context := parser.NewContext()
+	if err := mdProcessor.Convert([]byte(content), &buf, parser.WithContext(context)); err != nil {
+		return "<p>渲染失败</p>"
+	}
+	return buf.String()
 }

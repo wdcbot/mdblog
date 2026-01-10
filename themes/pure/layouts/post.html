@@ -9,9 +9,12 @@
 
 {% block content %}
 <div class="article-wrapper">
-    <article class="article {% if Post.TOC %}has-toc{% endif %}">
+    <article class="article {% if Post.TOC and Site.TOCEnabled %}has-toc{% endif %}">
         <header class="post-header">
-            <div class="post-meta">{{ Post.Date|date:"2006年01月02日" }} · {{ Post.Category }} · {{ Post.WordCount }} 字 · 约 {{ Post.ReadingTime }} 分钟</div>
+            <div class="post-meta">
+                {{ Post.Date|date:"2006年01月02日" }} · {{ Post.Category }} · {{ Post.WordCount }} 字
+                {% if Site.ReadingTimeEnabled %} · 约 {{ Post.ReadingTime }} 分钟{% endif %}
+            </div>
             <h1>{{ Post.Title }}</h1>
             <div class="tags">
                 {% for tag in Post.Tags %}
@@ -57,17 +60,35 @@
         {% endif %}
         
         <!-- 评论区 -->
+        {% if Site.CommentsEnabled %}
         <section class="comments-section">
-            <h3 class="comments-title">💬 评论 ({{ Comments|length }})</h3>
+            <h3 class="comments-title">💬 评论</h3>
             
-            <div class="comments-list">
+            <div class="comments-list" id="comments-list">
                 {% for comment in Comments %}
-                <div class="comment-item">
+                <div class="comment-item" data-id="{{ comment.ID }}">
                     <div class="comment-header">
                         <span class="comment-author">{{ comment.Author }}</span>
                         <span class="comment-date">{{ comment.CreatedAt|date:"2006-01-02 15:04" }}</span>
                     </div>
                     <div class="comment-content">{{ comment.Content }}</div>
+                    <button class="comment-reply-btn" onclick="showReplyForm('{{ comment.ID }}', '{{ comment.Author }}')">回复</button>
+                    
+                    {% if comment.Replies %}
+                    <div class="comment-replies">
+                        {% for reply in comment.Replies %}
+                        <div class="comment-item reply" data-id="{{ reply.ID }}">
+                            <div class="comment-header">
+                                <span class="comment-author">{{ reply.Author }}</span>
+                                {% if reply.ReplyTo %}<span class="reply-to">回复 @{{ reply.ReplyTo }}</span>{% endif %}
+                                <span class="comment-date">{{ reply.CreatedAt|date:"2006-01-02 15:04" }}</span>
+                            </div>
+                            <div class="comment-content">{{ reply.Content }}</div>
+                            <button class="comment-reply-btn" onclick="showReplyForm('{{ comment.ID }}', '{{ reply.Author }}')">回复</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                 </div>
                 {% empty %}
                 <p class="no-comments">暂无评论，来说两句吧 ~</p>
@@ -75,22 +96,25 @@
             </div>
             
             <form class="comment-form" id="comment-form">
-                <h4>✍️ 发表评论</h4>
+                <h4 id="form-title">✍️ 发表评论</h4>
                 <input type="hidden" name="post_slug" value="{{ Post.Slug }}">
+                <input type="hidden" name="parent_id" id="parent_id" value="">
+                <input type="hidden" name="reply_to" id="reply_to" value="">
                 <div class="form-row">
-                    <input type="text" name="author" placeholder="昵称 *" required>
-                    <input type="email" name="email" placeholder="邮箱（选填，不会公开）">
+                    <input type="text" name="author" id="comment-author" placeholder="昵称 *" required>
+                    <input type="email" name="email" id="comment-email" placeholder="邮箱（选填，不会公开）">
                 </div>
-                <textarea name="content" placeholder="写下你的想法..." rows="4" required></textarea>
+                <textarea name="content" id="comment-content" placeholder="写下你的想法..." rows="4" required></textarea>
                 <div class="comment-form-footer">
                     <button type="submit" class="btn-primary">提交评论</button>
-                    <span class="form-hint">评论需要审核后才会显示</span>
+                    <button type="button" class="btn-cancel" id="cancel-reply" style="display:none" onclick="cancelReply()">取消回复</button>
                 </div>
             </form>
         </section>
+        {% endif %}
     </article>
     
-    {% if Post.TOC %}
+    {% if Post.TOC and Site.TOCEnabled %}
     <aside class="toc-sidebar">
         <div class="toc-container">
             <h4 class="toc-title">目录</h4>

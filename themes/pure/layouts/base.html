@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ Site.Title }}{% endblock %}</title>
     <meta name="description" content="{% block description %}{{ Site.Description }}{% endblock %}">
+    {% if Site.Keywords %}<meta name="keywords" content="{{ Site.Keywords }}">{% endif %}
+    {% if Site.Author %}<meta name="author" content="{{ Site.Author }}">{% endif %}
+    
+    <!-- Favicon -->
+    {% if Site.Favicon %}<link rel="icon" href="{{ Site.Favicon }}">{% endif %}
     
     <!-- Open Graph -->
     <meta property="og:title" content="{% block og_title %}{{ Site.Title }}{% endblock %}">
@@ -25,11 +30,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 9999; }
+        .page-loader::after { content: ''; position: absolute; top: 0; left: 0; width: 30%; height: 100%; background: {{ Site.AccentColor|default:"#2563eb" }}; animation: loading 1s ease-in-out infinite; }
+        @keyframes loading { 0% { left: -30%; } 100% { left: 100%; } }
+        body.loaded .page-loader { opacity: 0; visibility: hidden; transition: all 0.3s; }
+        {% if Site.AccentColor %}:root { --accent: {{ Site.AccentColor }}; --accent-hover: {{ Site.AccentColor }}; }{% endif %}
+    </style>
+    
+    <!-- Analytics -->
+    {% if Site.Analytics %}{{ Site.Analytics|safe }}{% endif %}
 </head>
 <body>
+    <div class="page-loader"></div>
     <header class="site-header">
         <div class="container nav-wrapper">
+            {% if Site.Logo %}
+            <a href="/" class="logo"><img src="{{ Site.Logo }}" alt="{{ Site.Title }}" class="logo-img" style="height: {{ Site.LogoHeight|default:36 }}px;"></a>
+            {% else %}
             <a href="/" class="logo">{{ Site.Title }}</a>
+            {% endif %}
 
             <input id="nav-toggle" type="checkbox" class="nav-toggle-checkbox">
             <label for="nav-toggle" class="nav-toggle-btn" aria-label="Menu">
@@ -37,6 +57,12 @@
             </label>
 
             <nav class="site-nav">
+                <!-- 移动端搜索框 -->
+                <form action="/search" method="GET" class="search-form search-form-mobile">
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    <input type="text" name="q" placeholder="搜索文章..." value="{{ Query }}">
+                </form>
+                
                 <a href="/" class="nav-link">首页</a>
                 <details class="nav-cats">
                     <summary class="nav-link">分类</summary>
@@ -48,9 +74,13 @@
                     </div>
                 </details>
                 <a href="/tags" class="nav-link">标签</a>
+                {% for page in NavPages %}
+                <a href="/page/{{ page.Slug }}.html" class="nav-link">{{ page.Title }}</a>
+                {% endfor %}
             </nav>
 
-            <form action="/search" method="GET" class="search-form">
+            <!-- 桌面端搜索框 -->
+            <form action="/search" method="GET" class="search-form search-form-desktop">
                 <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
                 <input type="text" name="q" placeholder="Search..." value="{{ Query }}">
             </form>
@@ -67,9 +97,36 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 {{ Site.Title }}. <br><span class="footer-muted">Powered by mdblog.</span></p>
+            <div class="footer-content">
+                {% if Site.Footer.Links %}
+                <div class="footer-links">
+                    {% for link in Site.Footer.Links %}
+                    {% if link.URL %}
+                    <a href="{{ link.URL }}" class="footer-link" target="_blank" rel="noopener" title="{{ link.Name }}">
+                        <i class="{{ link.Icon }}"></i>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <p class="footer-copyright">
+                    {% if Site.Footer.Copyright %}{{ Site.Footer.Copyright }}{% else %}&copy; 2026 {{ Site.Title }}{% endif %}
+                </p>
+                
+                {% if Site.Footer.ICP %}
+                <p class="footer-icp">
+                    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">{{ Site.Footer.ICP }}</a>
+                </p>
+                {% endif %}
+                
+                <p class="footer-powered">Powered by <a href="https://github.com/wdcbot/mdblog" target="_blank">mdblog</a></p>
+            </div>
         </div>
     </footer>
+    
+    <!-- Toast 提示 -->
+    <div id="toast" class="toast"></div>
     
     <!-- 返回顶部 -->
     <button id="back-to-top" class="back-to-top" aria-label="返回顶部">
@@ -81,6 +138,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
     
     <script>
+    // Toast 提示函数
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast show ' + type;
+        setTimeout(() => toast.className = 'toast', 3000);
+    }
+    
+    // 页面加载完成
+    window.addEventListener('load', () => document.body.classList.add('loaded'));
+    
     // 暗色模式切换
     const themeToggle = document.getElementById('theme-toggle');
     const html = document.documentElement;
@@ -93,8 +161,13 @@
     
     // 初始化主题
     const savedTheme = localStorage.getItem('theme');
+    const defaultTheme = '{{ Site.DefaultTheme|default:"auto" }}';
     if (savedTheme) {
         setTheme(savedTheme === 'dark');
+    } else if (defaultTheme === 'dark') {
+        setTheme(true);
+    } else if (defaultTheme === 'light') {
+        setTheme(false);
     } else {
         setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
     }
@@ -115,7 +188,11 @@
     
     // 图片懒加载
     document.querySelectorAll('.content img').forEach(img => {
-        img.loading = 'lazy';
+        if (!img.hasAttribute('loading')) {
+            img.loading = 'lazy';
+        }
+        // 添加 decoding 属性优化渲染
+        img.decoding = 'async';
     });
     
     // TOC 高亮当前章节
@@ -138,12 +215,27 @@
     // 评论提交
     const commentForm = document.getElementById('comment-form');
     if (commentForm) {
+        const authorInput = document.getElementById('comment-author');
+        const emailInput = document.getElementById('comment-email');
+        
+        // 从 localStorage 恢复用户信息
+        if (localStorage.getItem('comment_author')) {
+            authorInput.value = localStorage.getItem('comment_author');
+        }
+        if (localStorage.getItem('comment_email')) {
+            emailInput.value = localStorage.getItem('comment_email');
+        }
+        
         commentForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const btn = this.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.textContent = '提交中...';
+            
+            // 保存用户信息到 localStorage
+            localStorage.setItem('comment_author', formData.get('author'));
+            localStorage.setItem('comment_email', formData.get('email'));
             
             fetch('/comment', {
                 method: 'POST',
@@ -152,19 +244,91 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'ok') {
-                    alert(data.message);
-                    this.reset();
+                    showToast('评论成功！', 'success');
+                    setTimeout(() => location.reload(), 1000);
                 } else {
-                    alert(data.error || '提交失败');
+                    showToast(data.error || '提交失败', 'error');
+                    btn.disabled = false;
+                    btn.textContent = '提交评论';
                 }
             })
-            .catch(() => alert('网络错误'))
-            .finally(() => {
+            .catch(() => {
+                showToast('网络错误，请重试', 'error');
                 btn.disabled = false;
                 btn.textContent = '提交评论';
             });
         });
     }
+    
+    // 回复功能
+    function showReplyForm(parentId, authorName) {
+        document.getElementById('parent_id').value = parentId;
+        document.getElementById('reply_to').value = authorName;
+        document.getElementById('form-title').textContent = '↩️ 回复 @' + authorName;
+        document.getElementById('cancel-reply').style.display = 'inline-block';
+        document.getElementById('comment-content').placeholder = '回复 @' + authorName + '...';
+        document.getElementById('comment-form').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('comment-content').focus();
+    }
+    
+    function cancelReply() {
+        document.getElementById('parent_id').value = '';
+        document.getElementById('reply_to').value = '';
+        document.getElementById('form-title').textContent = '✍️ 发表评论';
+        document.getElementById('cancel-reply').style.display = 'none';
+        document.getElementById('comment-content').placeholder = '写下你的想法...';
+    }
+    
+    // 代码复制按钮
+    document.querySelectorAll('pre').forEach(pre => {
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+        btn.title = '复制代码';
+        btn.onclick = function() {
+            const code = pre.querySelector('code');
+            navigator.clipboard.writeText(code.textContent).then(() => {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.classList.add('copied');
+                showToast('代码已复制', 'success');
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        };
+        pre.style.position = 'relative';
+        pre.appendChild(btn);
+    });
+    
+    // 图片灯箱
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox';
+    lightbox.innerHTML = '<img src="" alt=""><button class="lightbox-close">&times;</button>';
+    document.body.appendChild(lightbox);
+    
+    document.querySelectorAll('.content img').forEach(img => {
+        img.style.cursor = 'zoom-in';
+        img.onclick = function() {
+            lightbox.querySelector('img').src = this.src;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        };
+    });
+    
+    lightbox.onclick = function(e) {
+        if (e.target === lightbox || e.target.className === 'lightbox-close') {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    };
+    
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
     </script>
 </body>
 </html>

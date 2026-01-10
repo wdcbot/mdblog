@@ -1,31 +1,38 @@
-# Binaries for programs and plugins
+# Binaries
 *.exe
-*.exe~
 *.dll
 *.so
 *.dylib
-
-# Test binary, built with `go test -c`
 *.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Project specific
-.env
 mdblog
-blog.bleve/
-data/
-tmp/
 
-# IDEs
+# 搜索索引（运行时生成）
+blog.bleve/
+
+# 静态生成输出（CI 生成）
+public/
+
+# 用户数据（不提交到开源仓库）
+# data/*
+# !data/.gitkeep
+# uploads/*
+# !uploads/.gitkeep
+
+# 个人文章（如果是开源模板，不提交）
+# content/blog/
+# content/page/
+
+# IDE
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# macOS
+# OS
 .DS_Store
+Thumbs.db
+
+# 临时文件
+tmp/
+*.log

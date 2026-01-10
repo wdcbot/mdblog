@@ -20,6 +20,11 @@ body {
     min-height: 100vh;
     font-size: 14px;
     line-height: 1.5;
+    overflow-x: hidden;
+}
+
+html {
+    overflow-x: hidden;
 }
 
 /* Top Navigation (Global) */
@@ -88,6 +93,12 @@ nav {
     align-items: center;
     padding-right: 15px;
     height: 100%;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .user-info a {
@@ -302,7 +313,8 @@ tr:hover td { background-color: #fffbe6; } /* Typecho yellowish hover */
     .nav-left { align-items: center; }
     .nav-brand { background: transparent; padding: 0 12px; }
     .nav-right { padding-right: 0; }
-    .user-info { display: none; }
+    .user-info { display: flex; gap: 8px; }
+    .user-info a { font-size: 11px; }
     .nav-toggle { display: inline-flex; margin-left: 8px; }
     .nav-menu { 
         display: none; 
@@ -315,7 +327,45 @@ tr:hover td { background-color: #fffbe6; } /* Typecho yellowish hover */
     nav.nav-open .nav-menu { display: flex; }
     .nav-menu a { height: auto; padding: 10px 15px; }
     .columns { flex-direction: column; }
-    table { display: block; overflow-x: auto; white-space: nowrap; }
+    
+    /* 表格容器 */
+    .card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px;
+    }
+    
+    table td, table th {
+        white-space: nowrap;
+    }
+    
+    td .btn {
+        margin-bottom: 4px;
+    }
+    
+    main { margin: 15px auto; padding: 0 12px; max-width: 100%; box-sizing: border-box; }
+    
+    .tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+    .tabs a { padding: 6px 10px; font-size: 12px; }
+    
+    .filter-bar { flex-wrap: wrap; }
+    .filter-input { min-width: 100%; }
+    .filter-select { flex: 1; min-width: 0; }
+    
+    .batch-actions { flex-wrap: wrap; justify-content: center; }
+    
+    th, td { padding: 8px 10px; font-size: 12px; }
+    
+    .btn { padding: 6px 10px; }
+    
+    .form-control { font-size: 16px; }
+    
+    .stat-card { padding: 12px; }
+    .stat-icon { font-size: 22px; }
+    .stat-value { font-size: 20px; }
 }
 
 /* Editor Styles */
@@ -474,6 +524,18 @@ tr:hover td { background-color: #fffbe6; } /* Typecho yellowish hover */
     color: #fff;
 }
 
+.btn-accent {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.btn-accent:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #fff;
+}
+
 
 /* Badge Warning */
 .badge-warning {
@@ -626,4 +688,94 @@ tr:hover td { background-color: #fffbe6; } /* Typecho yellowish hover */
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
+}
+
+@media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card { flex-direction: column; text-align: center; gap: 6px; padding: 10px; }
+    .stat-icon { font-size: 20px; }
+    .stat-value { font-size: 18px; }
+    .stat-label { font-size: 11px; }
+    
+    .editor-nav { 
+        flex-wrap: wrap; 
+        height: auto; 
+        padding: 10px; 
+        gap: 10px;
+    }
+    .editor-left { width: 100%; }
+    .editor-path { 
+        max-width: 150px; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+        white-space: nowrap;
+    }
+    .editor-nav > div:last-child {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+    .editor-nav .btn { flex: 1; min-width: 80px; justify-content: center; }
+    
+    /* 表单响应式 */
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+    
+    /* 卡片 */
+    .card {
+        overflow-x: auto;
+    }
+    
+    /* 模态框 */
+    .modal-content {
+        width: calc(100% - 20px);
+        margin: 10px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+
+/* Admin Toast */
+.admin-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    background: #1f2937;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(100px);
+    transition: all 0.3s ease;
+}
+
+.admin-toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+.admin-toast.success {
+    background: #10b981;
+}
+
+.admin-toast.error {
+    background: #ef4444;
+}
+
+.admin-toast.warning {
+    background: #f59e0b;
 }

@@ -53,9 +53,12 @@ func Render(c *gin.Context, templateName string, data gin.H) {
 		return cats[i].Name < cats[j].Name
 	})
 
+	pages, _ := pkg.ListVisiblePages()
+
 	ctx := pongo2.Context{
 		"Site":          pkg.AppConfig.Site,
 		"NavCategories": cats,
+		"NavPages":      pages,
 	}
 	for k, v := range data {
 		ctx[k] = v

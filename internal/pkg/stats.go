@@ -123,3 +123,8 @@ func GetDailyViewsChart() ([]string, []int) {
 
 	return labels, values
 }
+
+// LoadStats 重新加载统计数据（用于数据恢复后）
+func LoadStats() {
+	loadStats()
+}

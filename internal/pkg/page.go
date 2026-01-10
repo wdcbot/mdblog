@@ -14,6 +14,7 @@ type Page struct {
 	Date     time.Time
 	Content  string
 	FilePath string
+	Hidden   bool // 是否在导航栏隐藏
 }
 
 func ListPages() ([]Page, error) {
@@ -33,15 +34,40 @@ func ListPages() ([]Page, error) {
 			filePath := filepath.Join(basePath, f.Name())
 			post, err := ParseMarkdownFile(filePath)
 			if err != nil { continue }
+			
+			// 读取 hidden 状态
+			hidden := false
+			content, _ := os.ReadFile(filePath)
+			if strings.Contains(string(content), "hidden: true") {
+				hidden = true
+			}
+			
 			pages = append(pages, Page{
 				Title:    post.Title,
 				Slug:     post.Slug,
 				Date:     post.Date,
 				FilePath: filePath,
+				Hidden:   hidden,
 			})
 		}
 	}
 	return pages, nil
+}
+
+// ListVisiblePages 获取导航栏显示的页面
+func ListVisiblePages() ([]Page, error) {
+	pages, err := ListPages()
+	if err != nil {
+		return nil, err
+	}
+	
+	var visible []Page
+	for _, p := range pages {
+		if !p.Hidden {
+			visible = append(visible, p)
+		}
+	}
+	return visible, nil
 }
 
 func CreatePage(title string) (string, error) {

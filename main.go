@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"mdblog/internal/pkg"
 	"mdblog/internal/router"
@@ -16,6 +17,11 @@ import (
 )
 
 func main() {
+	// 命令行参数
+	buildMode := flag.Bool("build", false, "生成静态站点")
+	outputDir := flag.String("output", "public", "静态站点输出目录")
+	flag.Parse()
+
 	// 1. Initialize Config
 	pkg.InitConfig()
 
@@ -29,6 +35,15 @@ func main() {
 
 	// 4. Initialize Store (Load posts into memory & Index for search)
 	pkg.InitStore()
+
+	// 静态生成模式
+	if *buildMode {
+		generator := pkg.NewStaticGenerator(*outputDir)
+		if err := generator.Generate(); err != nil {
+			log.Fatalf("生成静态站点失败: %v", err)
+		}
+		return
+	}
 
 	// 5. Initialize Comments
 	pkg.InitComments()

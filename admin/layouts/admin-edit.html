@@ -2,22 +2,125 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Editor - mdblog Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/vditor/dist/index.css" />
     <link rel="stylesheet" href="/admin-static/admin.css">
     <script src="https://unpkg.com/vditor/dist/index.min.js"></script>
+    <style>
+        .editor-container { display: flex; height: calc(100vh - 50px); }
+        .editor-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .preview-panel { width: 0; border-left: 1px solid #e5e7eb; overflow-y: auto; transition: width 0.3s; background: #fff; }
+        .preview-panel.show { width: 50%; }
+        .preview-content { padding: 2rem; max-width: 800px; margin: 0 auto; }
+        .preview-content h1, .preview-content h2, .preview-content h3 { margin-top: 1.5em; margin-bottom: 0.5em; }
+        .preview-content p { line-height: 1.8; margin-bottom: 1em; }
+        .preview-content pre { background: #f3f4f6; padding: 1rem; border-radius: 8px; overflow-x: auto; }
+        .preview-content code { font-family: 'Fira Code', monospace; font-size: 0.9em; }
+        .preview-content img { max-width: 100%; border-radius: 8px; }
+        .preview-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #374151; display: flex; justify-content: space-between; align-items: center; }
+        .btn-preview.active { background: var(--accent-color, #2563eb); color: #fff; }
+        
+        /* 上传弹窗 */
+        .upload-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .upload-modal.show { display: flex; }
+        .upload-box { background: #fff; border-radius: 12px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .upload-box h3 { margin: 0 0 1.5rem; font-size: 1.25rem; }
+        .upload-area { border: 2px dashed #d1d5db; border-radius: 8px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover, .upload-area.dragover { border-color: var(--accent-color, #2563eb); background: #f0f7ff; }
+        .upload-area i { font-size: 3rem; color: #9ca3af; margin-bottom: 1rem; }
+        .upload-area p { color: #6b7280; margin: 0; }
+        .upload-area input { display: none; }
+        .upload-progress { margin-top: 1rem; display: none; }
+        .upload-progress.show { display: block; }
+        .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent-color, #2563eb); width: 0; transition: width 0.3s; }
+        .upload-result { margin-top: 1rem; padding: 1rem; background: #f0fdf4; border-radius: 8px; display: none; }
+        .upload-result.show { display: block; }
+        .upload-result input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; box-sizing: border-box; }
+        .upload-actions { display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: flex-end; }
+        
+        /* 图片调整尺寸 - 简化版，只在上传时设置 */
+        
+        /* 隐藏 Vditor 自带的图片尺寸显示 */
+        .vditor-ir__node--expand .vditor-ir__marker--info,
+        .vditor-ir img + br + span {
+            display: none !important;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .editor-nav { 
+                flex-wrap: wrap; 
+                height: auto; 
+                padding: 10px 12px; 
+                gap: 8px;
+            }
+            .editor-left { 
+                width: 100%; 
+                justify-content: space-between;
+            }
+            .editor-nav > div:last-child {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .editor-nav .btn { 
+                flex: 1; 
+                min-width: calc(50% - 4px);
+                justify-content: center;
+                font-size: 12px;
+                padding: 8px 6px;
+            }
+            .editor-nav .btn-primary {
+                min-width: 100%;
+                order: 10;
+            }
+            .editor-path { 
+                max-width: 180px; 
+                overflow: hidden; 
+                text-overflow: ellipsis; 
+                white-space: nowrap;
+                font-size: 12px;
+            }
+            .editor-container { height: calc(100vh - 110px); }
+            .preview-panel.show { width: 100%; position: fixed; top: 110px; left: 0; right: 0; bottom: 0; z-index: 50; }
+            .upload-box { padding: 1.5rem; }
+            .upload-area { padding: 2rem 1rem; }
+            .upload-area i { font-size: 2rem; }
+        }
+        
+        /* 粘贴提示 */
+        .paste-hint { 
+            font-size: 0.8rem; 
+            color: #9ca3af; 
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #e5e7eb;
+        }
+    </style>
 </head>
 <body class="editor-body">
+    <div id="toast" class="admin-toast"></div>
+    
     <div class="editor-nav">
         <div class="editor-left">
-            <a href="/admin/posts" class="btn btn-outline btn-sm">
-                返回
-            </a>
+            <a href="/admin/posts" class="btn btn-outline btn-sm">返回</a>
             <span class="editor-divider"></span>
             <span class="editor-path">{{.Path}}</span>
         </div>
         <div>
+            <button class="btn btn-outline btn-sm" onclick="showUploadModal()">
+                <i class="fa-solid fa-image"></i> 上传图片
+            </button>
+            <button class="btn btn-outline btn-sm btn-preview" onclick="togglePreview()" id="preview-btn">
+                <i class="fa-solid fa-eye"></i> 预览
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="togglePinned()" id="pinned-btn">
+                <i class="fa-solid fa-thumbtack"></i> <span id="pinned-text">设为置顶</span>
+            </button>
             <button class="btn btn-outline btn-sm" onclick="toggleDraft()" id="draft-btn">
                 <i class="fa-solid fa-file-pen"></i> <span id="draft-text">设为草稿</span>
             </button>
@@ -27,12 +130,91 @@
         </div>
     </div>
     
-    <div id="vditor"></div>
+    <div class="editor-container">
+        <div class="editor-main">
+            <div id="vditor"></div>
+        </div>
+        <div class="preview-panel" id="preview-panel">
+            <div class="preview-header">
+                <span>实时预览</span>
+                <button class="btn btn-outline btn-sm" onclick="togglePreview()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="preview-content" id="preview-content"></div>
+        </div>
+    </div>
+    
     <textarea id="content-hidden" class="hidden">{{.Content}}</textarea>
 
+    <!-- 上传弹窗 -->
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-box">
+            <h3><i class="fa-solid fa-cloud-arrow-up"></i> 上传图片</h3>
+            <div class="upload-area" id="upload-area">
+                <i class="fa-solid fa-image"></i>
+                <p>点击或拖拽图片到此处上传</p>
+                <p style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.5rem;">支持 JPG、PNG、GIF、WebP、SVG，最大 10MB</p>
+                <input type="file" id="upload-input" accept="image/*">
+                <p class="paste-hint"><i class="fa-solid fa-paste"></i> 也可以直接在编辑器中粘贴图片</p>
+            </div>
+            <div class="upload-progress" id="upload-progress">
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+                <p style="text-align: center; margin-top: 0.5rem; color: #6b7280;">上传中...</p>
+            </div>
+            <div class="upload-result" id="upload-result">
+                <p style="margin: 0 0 0.5rem; color: #059669; font-weight: 500;"><i class="fa-solid fa-check"></i> 上传成功</p>
+                <input type="text" id="upload-url" readonly onclick="this.select()">
+                <div class="image-size-options" style="margin-top: 1rem;">
+                    <p style="margin: 0 0 0.5rem; font-weight: 500; color: #374151;">图片尺寸</p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="img-size" value="" checked onchange="updateImagePreview()"> 原始大小
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="img-size" value="300" onchange="updateImagePreview()"> 小 (300px)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="img-size" value="500" onchange="updateImagePreview()"> 中 (500px)
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <input type="radio" name="img-size" value="800" onchange="updateImagePreview()"> 大 (800px)
+                        </label>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem; align-items: center;">
+                        <span style="color: #6b7280; font-size: 0.9rem;">自定义:</span>
+                        <input type="number" id="custom-width" placeholder="宽度" style="width: 80px; padding: 0.4rem; border: 1px solid #d1d5db; border-radius: 4px;" onchange="updateImagePreview()">
+                        <span style="color: #9ca3af;">×</span>
+                        <input type="number" id="custom-height" placeholder="高度" style="width: 80px; padding: 0.4rem; border: 1px solid #d1d5db; border-radius: 4px;" onchange="updateImagePreview()">
+                        <span style="color: #9ca3af; font-size: 0.85rem;">px</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.85rem; color: #6b7280; margin: 0.75rem 0 0;">代码: <code id="upload-code-preview">![图片](<span id="upload-url-md"></span>)</code></p>
+            </div>
+            <div class="upload-actions">
+                <button class="btn btn-outline btn-sm" onclick="hideUploadModal()">关闭</button>
+                <button class="btn btn-primary btn-sm" onclick="insertImage()" id="insert-btn" style="display: none;">
+                    <i class="fa-solid fa-plus"></i> 插入到编辑器
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const hiddenContent = document.getElementById('content-hidden').value
-        const vditor = new Vditor('vditor', {
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'admin-toast show ' + type;
+            setTimeout(() => toast.className = 'admin-toast', 3000);
+        }
+        
+        const hiddenContent = document.getElementById('content-hidden').value;
+        let vditor;
+        let previewVisible = false;
+        let lastUploadedUrl = '';
+        
+        // 初始化编辑器
+        vditor = new Vditor('vditor', {
             height: '100%',
             value: hiddenContent,
             cache: { enable: false },
@@ -41,71 +223,341 @@
             outline: { enable: true },
             toolbarConfig: { pin: true },
             preview: { theme: { current: 'light' } },
-        })
+            upload: {
+                url: '/admin/upload',
+                fieldName: 'file',
+                max: 10 * 1024 * 1024,
+                accept: 'image/*',
+                success: (editor, msg) => {
+                    try {
+                        const res = JSON.parse(msg);
+                        if (res.status === 'ok') {
+                            showToast('图片上传成功', 'success');
+                        }
+                    } catch(e) {}
+                },
+                error: () => showToast('图片上传失败', 'error'),
+                format: (files, responseText) => {
+                    try {
+                        const res = JSON.parse(responseText);
+                        if (res.status === 'ok') {
+                            return JSON.stringify({
+                                "msg": "",
+                                "code": 0,
+                                "data": {
+                                    "errFiles": [],
+                                    "succMap": {
+                                        [res.name]: res.url
+                                    }
+                                }
+                            });
+                        }
+                    } catch(e) {}
+                    return responseText;
+                }
+            },
+            input: () => {
+                if (previewVisible) updatePreview();
+            }
+        });
+        
+        // 预览功能
+        function togglePreview() {
+            const panel = document.getElementById('preview-panel');
+            const btn = document.getElementById('preview-btn');
+            previewVisible = !previewVisible;
+            
+            if (previewVisible) {
+                panel.classList.add('show');
+                btn.classList.add('active');
+                updatePreview();
+            } else {
+                panel.classList.remove('show');
+                btn.classList.remove('active');
+            }
+        }
+        
+        function updatePreview() {
+            const content = vditor.getValue();
+            fetch('/admin/preview', {
+                method: 'POST',
+                body: new URLSearchParams({ content })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('preview-content').innerHTML = data.html;
+            });
+        }
+        
+        // 上传功能
+        function showUploadModal() {
+            document.getElementById('upload-modal').classList.add('show');
+            resetUploadState();
+        }
+        
+        function hideUploadModal() {
+            document.getElementById('upload-modal').classList.remove('show');
+        }
+        
+        function resetUploadState() {
+            document.getElementById('upload-progress').classList.remove('show');
+            document.getElementById('upload-result').classList.remove('show');
+            document.getElementById('insert-btn').style.display = 'none';
+            document.getElementById('progress-fill').style.width = '0';
+            document.getElementById('custom-width').value = '';
+            document.getElementById('custom-height').value = '';
+            document.querySelectorAll('input[name="img-size"]')[0].checked = true;
+            lastUploadedUrl = '';
+        }
+        
+        const uploadArea = document.getElementById('upload-area');
+        const uploadInput = document.getElementById('upload-input');
+        
+        uploadArea.addEventListener('click', () => uploadInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]);
+        });
+        uploadInput.addEventListener('change', () => {
+            if (uploadInput.files.length) uploadFile(uploadInput.files[0]);
+        });
+        
+        function uploadFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('请选择图片文件', 'error');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('文件大小不能超过10MB', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('upload-progress').classList.add('show');
+            document.getElementById('progress-fill').style.width = '50%';
+            
+            fetch('/admin/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('progress-fill').style.width = '100%';
+                if (data.status === 'ok') {
+                    lastUploadedUrl = data.url;
+                    document.getElementById('upload-url').value = data.url;
+                    document.getElementById('upload-url-md').textContent = data.url;
+                    document.getElementById('upload-result').classList.add('show');
+                    document.getElementById('insert-btn').style.display = 'inline-flex';
+                    showToast('上传成功', 'success');
+                } else {
+                    showToast(data.error || '上传失败', 'error');
+                }
+            })
+            .catch(() => showToast('上传失败', 'error'))
+            .finally(() => {
+                setTimeout(() => document.getElementById('upload-progress').classList.remove('show'), 500);
+            });
+        }
+        
+        function insertImage() {
+            if (lastUploadedUrl) {
+                const code = generateImageCode();
+                vditor.insertValue(code);
+                hideUploadModal();
+                showToast('已插入图片', 'success');
+            }
+        }
+        
+        // 生成图片代码
+        function generateImageCode() {
+            const url = lastUploadedUrl;
+            const customW = document.getElementById('custom-width').value;
+            const customH = document.getElementById('custom-height').value;
+            const selectedSize = document.querySelector('input[name="img-size"]:checked')?.value;
+            
+            // 优先使用自定义尺寸
+            if (customW || customH) {
+                const w = customW || 'auto';
+                const h = customH || 'auto';
+                return `<img src="${url}" alt="图片" width="${w}" height="${h}">`;
+            }
+            
+            // 使用预设尺寸
+            if (selectedSize) {
+                return `<img src="${url}" alt="图片" width="${selectedSize}">`;
+            }
+            
+            // 原始大小用 Markdown 语法
+            return `![图片](${url})`;
+        }
+        
+        // 更新预览代码
+        function updateImagePreview() {
+            if (!lastUploadedUrl) return;
+            const code = generateImageCode();
+            document.getElementById('upload-code-preview').innerHTML = `<code>${escapeHtml(code)}</code>`;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
         
         // 检查当前是否为草稿
         function checkDraftStatus() {
-            const content = vditor ? vditor.getValue() : hiddenContent
-            const isDraft = /^---[\s\S]*?draft:\s*true[\s\S]*?---/.test(content)
-            const draftText = document.getElementById('draft-text')
-            const draftBtn = document.getElementById('draft-btn')
+            const content = vditor ? vditor.getValue() : hiddenContent;
+            const isDraft = /^---[\s\S]*?draft:\s*true[\s\S]*?---/.test(content);
+            const draftText = document.getElementById('draft-text');
+            const draftBtn = document.getElementById('draft-btn');
             if (isDraft) {
-                draftText.textContent = '取消草稿'
-                draftBtn.classList.add('btn-warning')
+                draftText.textContent = '取消草稿';
+                draftBtn.classList.add('btn-warning');
             } else {
-                draftText.textContent = '设为草稿'
-                draftBtn.classList.remove('btn-warning')
+                draftText.textContent = '设为草稿';
+                draftBtn.classList.remove('btn-warning');
             }
-            return isDraft
+            return isDraft;
+        }
+        
+        // 检查当前是否为置顶
+        function checkPinnedStatus() {
+            const content = vditor ? vditor.getValue() : hiddenContent;
+            const isPinned = /^---[\s\S]*?pinned:\s*true[\s\S]*?---/.test(content);
+            const pinnedText = document.getElementById('pinned-text');
+            const pinnedBtn = document.getElementById('pinned-btn');
+            if (isPinned) {
+                pinnedText.textContent = '取消置顶';
+                pinnedBtn.classList.add('btn-accent');
+            } else {
+                pinnedText.textContent = '设为置顶';
+                pinnedBtn.classList.remove('btn-accent');
+            }
+            return isPinned;
         }
         
         // 初始化检查
-        setTimeout(checkDraftStatus, 500)
+        setTimeout(() => {
+            checkDraftStatus();
+            checkPinnedStatus();
+        }, 500);
         
         // 切换草稿状态
         function toggleDraft() {
-            let content = vditor.getValue()
-            const isDraft = checkDraftStatus()
+            let content = vditor.getValue();
+            const isDraft = checkDraftStatus();
             
             if (isDraft) {
-                // 移除 draft: true
-                content = content.replace(/^(---[\s\S]*?)draft:\s*true\n?([\s\S]*?---)/, '$1$2')
-                content = content.replace(/\n\n---/, '\n---') // 清理多余空行
+                content = content.replace(/^(---[\s\S]*?)draft:\s*true\n?([\s\S]*?---)/, '$1$2');
+                content = content.replace(/\n\n---/, '\n---');
             } else {
-                // 添加 draft: true
-                content = content.replace(/^(---\n)/, '$1draft: true\n')
+                content = content.replace(/^(---\n)/, '$1draft: true\n');
             }
             
-            vditor.setValue(content)
-            setTimeout(checkDraftStatus, 100)
+            vditor.setValue(content);
+            setTimeout(checkDraftStatus, 100);
+        }
+        
+        // 切换置顶状态
+        function togglePinned() {
+            let content = vditor.getValue();
+            const isPinned = checkPinnedStatus();
+            
+            if (isPinned) {
+                content = content.replace(/^(---[\s\S]*?)pinned:\s*true\n?([\s\S]*?---)/, '$1$2');
+                content = content.replace(/\n\n---/, '\n---');
+            } else {
+                content = content.replace(/^(---\n)/, '$1pinned: true\n');
+            }
+            
+            vditor.setValue(content);
+            setTimeout(checkPinnedStatus, 100);
         }
 
         function saveContent() {
-            const content = vditor.getValue()
-            const formData = new FormData()
-            formData.append('path', '{{.Path}}')
-            formData.append('content', content)
+            const content = vditor.getValue();
+            const formData = new FormData();
+            formData.append('path', '{{.Path}}');
+            formData.append('content', content);
 
-            const btn = document.querySelector('.btn-primary')
-            const originalHTML = btn.innerHTML
-            btn.innerHTML = '保存中...'
-            btn.disabled = true
-            btn.classList.remove('btn-success')
+            const btn = document.querySelector('.btn-primary');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '保存中...';
+            btn.disabled = true;
+            btn.classList.remove('btn-success');
 
             fetch('/admin/save', { method: 'POST', body: formData })
             .then(res => { if(!res.ok) throw new Error('Network error'); return res.json(); })
             .then(data => {
                 if (data.status === 'ok') {
-                    btn.innerHTML = '已保存'
-                    btn.classList.add('btn-success')
+                    showToast('保存成功', 'success');
+                    btn.innerHTML = '已保存';
+                    btn.classList.add('btn-success');
                     setTimeout(() => {
-                        btn.innerHTML = originalHTML
-                        btn.classList.remove('btn-success')
-                        btn.disabled = false
-                    }, 1500)
-                } else { throw new Error(data.error) }
+                        btn.innerHTML = originalHTML;
+                        btn.classList.remove('btn-success');
+                        btn.disabled = false;
+                    }, 1500);
+                } else { throw new Error(data.error); }
             })
-            .catch(err => { alert('保存失败: ' + err.message); btn.innerHTML = originalHTML; btn.disabled = false; })
+            .catch(err => { 
+                showToast('保存失败: ' + err.message, 'error');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+        }
+        
+        // ESC 关闭弹窗
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideUploadModal();
+        });
+        
+        // 粘贴图片上传
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            
+            for (let item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) {
+                        uploadFileAndInsert(file);
+                    }
+                    break;
+                }
+            }
+        });
+        
+        // 上传并直接插入
+        function uploadFileAndInsert(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('文件大小不能超过10MB', 'error');
+                return;
+            }
+            
+            showToast('正在上传图片...', 'info');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/admin/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    vditor.insertValue(`![图片](${data.url})`);
+                    showToast('图片已插入', 'success');
+                } else {
+                    showToast(data.error || '上传失败', 'error');
+                }
+            })
+            .catch(() => showToast('上传失败', 'error'));
         }
     </script>
 </body>
