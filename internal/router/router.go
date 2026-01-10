@@ -651,9 +651,18 @@ func SetupRouter() *gin.Engine {
 			c.String(http.StatusInternalServerError, err.Error())
 			return
 		}
+		categories, _ := pkg.ListCategories()
+		// 获取当前分类
+		currentCategory := ""
+		parts := strings.Split(path, "/")
+		if len(parts) >= 3 {
+			currentCategory = parts[2] // content/blog/分类名/文件名
+		}
 		err = theme.AdminTemplates.ExecuteTemplate(c.Writer, "admin-edit.html", gin.H{
-			"Path":    path,
-			"Content": content,
+			"Path":            path,
+			"Content":         content,
+			"Categories":      categories,
+			"CurrentCategory": currentCategory,
 		})
 		if err != nil {
 			c.String(http.StatusInternalServerError, err.Error())
@@ -677,6 +686,28 @@ func SetupRouter() *gin.Engine {
 		pkg.LoadAllPosts()
 		pkg.InitSearchIndex()
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	// 移动文章到其他分类
+	admin.POST("/move-post", func(c *gin.Context) {
+		path := c.PostForm("path")
+		category := c.PostForm("category")
+		
+		if !pkg.IsPathSafe(path) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+			return
+		}
+		
+		newPath, err := pkg.MovePostToCategory(path, category)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		
+		pkg.InvalidateCache(path)
+		pkg.LoadAllPosts()
+		pkg.InitSearchIndex()
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "newPath": newPath})
 	})
 
 	admin.GET("/settings", func(c *gin.Context) {

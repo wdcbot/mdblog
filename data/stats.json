@@ -1,11 +1,13 @@
 {
-  "total_views": 6,
-  "today_views": 6,
+  "total_views": 30,
+  "today_views": 30,
   "daily_views": {
-    "2026-01-10": 6
+    "2026-01-10": 30
   },
   "top_posts": {
-    "getting-started": 6
+    "01-quick-start": 2,
+    "getting-started": 8,
+    "qingfeng": 20
   },
   "last_updated": "2026-01-10"
 }

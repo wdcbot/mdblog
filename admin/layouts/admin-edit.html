@@ -109,6 +109,12 @@
         <div class="editor-left">
             <a href="/admin/posts" class="btn btn-outline btn-sm">返回</a>
             <span class="editor-divider"></span>
+            <select id="category-select" class="form-control" style="width: auto; padding: 4px 8px; font-size: 12px;" onchange="changeCategory()">
+                {{range .Categories}}
+                <option value="{{.Name}}" {{if eq .Name $.CurrentCategory}}selected{{end}}>{{.Name}}</option>
+                {{end}}
+            </select>
+            <span class="editor-divider"></span>
             <span class="editor-path">{{.Path}}</span>
         </div>
         <div>
@@ -483,7 +489,7 @@
         function saveContent() {
             const content = vditor.getValue();
             const formData = new FormData();
-            formData.append('path', '{{.Path}}');
+            formData.append('path', currentPath);
             formData.append('content', content);
 
             const btn = document.querySelector('.btn-primary');
@@ -517,6 +523,38 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') hideUploadModal();
         });
+        
+        // 修改分类
+        let currentPath = '{{.Path}}';
+        function changeCategory() {
+            const newCategory = document.getElementById('category-select').value;
+            if (!confirm(`确定要将文章移动到「${newCategory}」分类吗？`)) {
+                // 恢复原来的选择
+                document.getElementById('category-select').value = '{{.CurrentCategory}}';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('path', currentPath);
+            formData.append('category', newCategory);
+            
+            fetch('/admin/move-post', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    showToast('分类修改成功', 'success');
+                    currentPath = data.newPath;
+                    document.querySelector('.editor-path').textContent = data.newPath;
+                } else {
+                    showToast('修改失败: ' + data.error, 'error');
+                    document.getElementById('category-select').value = '{{.CurrentCategory}}';
+                }
+            })
+            .catch(() => {
+                showToast('网络错误', 'error');
+                document.getElementById('category-select').value = '{{.CurrentCategory}}';
+            });
+        }
         
         // 粘贴图片上传
         document.addEventListener('paste', (e) => {

@@ -63,3 +63,25 @@ func DeleteCategory(name string) error {
 	}
 	return os.RemoveAll(path)
 }
+
+
+// MovePostToCategory 移动文章到其他分类
+func MovePostToCategory(oldPath, newCategory string) (string, error) {
+	// 获取文件名
+	filename := filepath.Base(oldPath)
+	
+	// 构建新路径
+	newPath := filepath.Join("content", "blog", newCategory, filename)
+	
+	// 确保目标分类存在
+	if err := os.MkdirAll(filepath.Dir(newPath), 0755); err != nil {
+		return "", err
+	}
+	
+	// 移动文件
+	if err := os.Rename(oldPath, newPath); err != nil {
+		return "", err
+	}
+	
+	return newPath, nil
+}
