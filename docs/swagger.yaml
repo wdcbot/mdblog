@@ -1,0 +1,157 @@
+basePath: /
+definitions:
+  router.Category:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: 技术
+        type: string
+      postCount:
+        example: 10
+        type: integer
+    type: object
+  router.Post:
+    properties:
+      category:
+        example: 技术
+        type: string
+      content:
+        example: 文章内容...
+        type: string
+      date:
+        example: "2026-01-10"
+        type: string
+      id:
+        example: 1
+        type: integer
+      tags:
+        example:
+        - Go
+        - 教程
+        items:
+          type: string
+        type: array
+      title:
+        example: Hello World
+        type: string
+    type: object
+  router.Response:
+    properties:
+      code:
+        example: 0
+        type: integer
+      data: {}
+      message:
+        example: success
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: 轻量级 Markdown 博客系统 API
+  title: mdblog API
+  version: "1.0"
+paths:
+  /api/categories:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有分类
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/router.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/router.Category'
+                  type: array
+              type: object
+      summary: 获取分类列表
+      tags:
+      - 分类
+  /api/info:
+    get:
+      consumes:
+      - application/json
+      description: 获取博客站点基本信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/router.Response'
+      summary: 获取站点信息
+      tags:
+      - 系统
+  /api/posts:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取文章列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/router.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/router.Post'
+                  type: array
+              type: object
+      summary: 获取文章列表
+      tags:
+      - 文章
+  /api/posts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据 ID 获取文章详情
+      parameters:
+      - description: 文章 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/router.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/router.Post'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/router.Response'
+      summary: 获取文章详情
+      tags:
+      - 文章
+swagger: "2.0"
