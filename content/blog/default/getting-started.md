@@ -7,42 +7,48 @@ pinned: true
 
 欢迎使用 mdblog！这是一个轻量级的 Markdown 博客系统，无需数据库，简单易用。
 
-## 快速开始
+## 部署到 Zeabur（推荐）
 
-### 1. 下载项目
+最简单的部署方式，5 分钟上线：
+
+### 1. Fork 仓库
+
+去 [GitHub](https://github.com/wdcbot/mdblog) Fork 这个项目到你的账号。
+
+### 2. 登录 Zeabur
+
+访问 [zeabur.com](https://zeabur.com)，用 GitHub 账号登录。
+
+### 3. 创建项目
+
+1. 点击「创建新项目」
+2. 选择「共享集群」（有免费试用）
+3. 地区选择「香港」（国内访问快）
+
+### 4. 部署服务
+
+1. 点击「添加服务」→「Git」
+2. 选择你 fork 的 mdblog 仓库
+3. Zeabur 会自动检测 Go 项目并开始构建
+4. 等待几分钟，构建完成后点击「生成域名」
+
+### 5. 完成
+
+访问生成的域名即可看到你的博客！
+
+后台地址：`你的域名/admin`，默认账号 `admin`，密码 `admin888`
+
+> 每次你 push 代码到 GitHub，Zeabur 会自动重新部署。
+
+---
+
+## 本地运行
+
+如果你想在本地开发调试：
 
 ```bash
-git clone https://github.com/wdcbot/mdblog.git
+git clone https://github.com/你的用户名/mdblog.git
 cd mdblog
-```
-
-### 2. 配置
-
-复制配置文件并修改：
-
-```bash
-cp config.example.yaml config.yaml
-```
-
-编辑 `config.yaml`，修改管理员密码和站点信息：
-
-```yaml
-server:
-    port: 8080
-
-admin:
-    username: admin
-    password: 你的密码
-    jwt_secret: 随机字符串
-
-site:
-    title: 我的博客
-    description: 博客描述
-```
-
-### 3. 运行
-
-```bash
 go run main.go
 ```
 
@@ -151,14 +157,7 @@ site:
 
 ---
 
-## 部署
-
-### 本地运行
-
-```bash
-go build -o mdblog
-./mdblog
-```
+## 其他部署方式
 
 ### Docker 部署
 
@@ -168,10 +167,22 @@ docker-compose up -d
 
 ### 服务器部署
 
-1. 编译：`go build -o mdblog`
-2. 上传到服务器
-3. 使用 systemd 或 supervisor 管理进程
-4. 配置 Nginx 反向代理
+```bash
+go build -o mdblog
+./mdblog
+```
+
+配合 Nginx 反向代理使用。
+
+### 静态部署（GitHub Pages）
+
+如果不需要评论和后台功能，可以生成静态站点：
+
+```bash
+go run main.go --build
+```
+
+生成的文件在 `public/` 目录，可部署到 GitHub Pages。
 
 ---
 
