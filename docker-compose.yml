@@ -8,7 +8,14 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./content:/app/content
-      - ./data:/app/data
-      - ./uploads:/app/uploads
+      # 数据持久化 - 首次启动会自动从镜像同步数据
+      - mdblog_content:/app/content
+      - mdblog_data:/app/data
+      - mdblog_uploads:/app/uploads
+      # 配置文件可选挂载（如需自定义配置）
       - ./config.yaml:/app/config.yaml
+
+volumes:
+  mdblog_content:
+  mdblog_data:
+  mdblog_uploads:
