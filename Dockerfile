@@ -27,6 +27,7 @@ COPY --from=builder /build/mdblog .
 COPY --from=builder /build/config.yaml .
 COPY --from=builder /build/themes/ ./themes/
 COPY --from=builder /build/admin/ ./admin/
+COPY --from=builder /build/docs/ ./docs/
 COPY --from=builder /build/entrypoint.sh .
 
 # GitHub 数据先复制到临时目录，启动时合并到 Volume

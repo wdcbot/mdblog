@@ -1,3 +1,9 @@
+// @title mdblog API
+// @version 1.0
+// @description 轻量级 Markdown 博客系统 API
+// @host localhost:8080
+// @BasePath /
+
 package main
 
 import (

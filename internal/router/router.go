@@ -20,6 +20,7 @@ import (
 
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	qingfeng "github.com/wdcbot/qingfeng"
 )
 
 // Session 管理
@@ -79,6 +80,25 @@ func SetupRouter() *gin.Engine {
 
 	// Gzip 压缩
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
+
+	// 青峰 Swagger API 文档
+	r.GET("/swagger/*any", qingfeng.Handler(qingfeng.Config{
+		Title:         "mdblog API 文档",
+		Description:   "mdblog 博客系统 API - 青峰 Swagger 演示",
+		Version:       "1.0.0",
+		BasePath:      "/swagger",
+		DocPath:       "./docs/swagger.json",
+		EnableDebug:   true,
+		DarkMode:      false,
+		UITheme:       qingfeng.ThemeDefault,
+		AutoGenerate:  true,
+		SwagSearchDir: ".",
+		SwagOutputDir: "./docs",
+		Environments: []qingfeng.Environment{
+			{Name: "本地开发", BaseURL: "http://localhost:8080"},
+			{Name: "线上环境", BaseURL: "https://wdc.zeabur.app"},
+		},
+	}))
 
 	// 静态资源缓存中间件
 	staticCacheMiddleware := func(c *gin.Context) {
@@ -272,6 +292,15 @@ func SetupRouter() *gin.Engine {
 			"categories": len(pkg.PostsMap),
 		})
 	})
+
+	// ========== 示例 API（青峰 Swagger 演示）==========
+	api := r.Group("/api")
+	{
+		api.GET("/posts", getPosts)
+		api.GET("/posts/:id", getPostByID)
+		api.GET("/categories", getCategories)
+		api.GET("/info", getInfo)
+	}
 
 	// Comment submission
 	r.POST("/comment", func(c *gin.Context) {
@@ -1192,4 +1221,107 @@ func generateSitemap() string {
 
 	output, _ := xml.MarshalIndent(sitemap, "", "  ")
 	return xml.Header + string(output)
+}
+
+// ========== 示例 API 处理函数（青峰 Swagger 演示）==========
+
+// Post 文章结构
+type Post struct {
+	ID       int      `json:"id" example:"1"`
+	Title    string   `json:"title" example:"Hello World"`
+	Content  string   `json:"content" example:"文章内容..."`
+	Category string   `json:"category" example:"技术"`
+	Tags     []string `json:"tags" example:"Go,教程"`
+	Date     string   `json:"date" example:"2026-01-10"`
+}
+
+// Category 分类结构
+type Category struct {
+	ID        int    `json:"id" example:"1"`
+	Name      string `json:"name" example:"技术"`
+	PostCount int    `json:"postCount" example:"10"`
+}
+
+// Response 通用响应
+type Response struct {
+	Code    int         `json:"code" example:"0"`
+	Message string      `json:"message" example:"success"`
+	Data    interface{} `json:"data"`
+}
+
+// getPosts 获取文章列表
+// @Summary 获取文章列表
+// @Description 分页获取文章列表
+// @Tags 文章
+// @Accept json
+// @Produce json
+// @Param page query int false "页码" default(1)
+// @Param size query int false "每页数量" default(10)
+// @Success 200 {object} Response{data=[]Post}
+// @Router /api/posts [get]
+func getPosts(c *gin.Context) {
+	posts := []Post{
+		{ID: 1, Title: "Go 语言入门", Content: "Go 是一门简洁高效的编程语言...", Category: "技术", Tags: []string{"Go", "入门"}, Date: "2026-01-10"},
+		{ID: 2, Title: "Docker 实战", Content: "Docker 容器化部署指南...", Category: "技术", Tags: []string{"Docker", "部署"}, Date: "2026-01-09"},
+		{ID: 3, Title: "Swagger 文档", Content: "API 文档自动生成...", Category: "教程", Tags: []string{"Swagger", "API"}, Date: "2026-01-08"},
+	}
+	c.JSON(http.StatusOK, Response{Code: 0, Message: "success", Data: posts})
+}
+
+// getPostByID 获取文章详情
+// @Summary 获取文章详情
+// @Description 根据 ID 获取文章详情
+// @Tags 文章
+// @Accept json
+// @Produce json
+// @Param id path int true "文章 ID"
+// @Success 200 {object} Response{data=Post}
+// @Failure 404 {object} Response
+// @Router /api/posts/{id} [get]
+func getPostByID(c *gin.Context) {
+	id := c.Param("id")
+	post := Post{ID: 1, Title: "Go 语言入门", Content: "Go 是一门简洁高效的编程语言，由 Google 开发...", Category: "技术", Tags: []string{"Go", "入门"}, Date: "2026-01-10"}
+	if id == "1" {
+		c.JSON(http.StatusOK, Response{Code: 0, Message: "success", Data: post})
+	} else {
+		c.JSON(http.StatusNotFound, Response{Code: 404, Message: "文章不存在", Data: nil})
+	}
+}
+
+// getCategories 获取分类列表
+// @Summary 获取分类列表
+// @Description 获取所有分类
+// @Tags 分类
+// @Accept json
+// @Produce json
+// @Success 200 {object} Response{data=[]Category}
+// @Router /api/categories [get]
+func getCategories(c *gin.Context) {
+	categories := []Category{
+		{ID: 1, Name: "技术", PostCount: 15},
+		{ID: 2, Name: "教程", PostCount: 8},
+		{ID: 3, Name: "生活", PostCount: 5},
+	}
+	c.JSON(http.StatusOK, Response{Code: 0, Message: "success", Data: categories})
+}
+
+// getInfo 获取站点信息
+// @Summary 获取站点信息
+// @Description 获取博客站点基本信息
+// @Tags 系统
+// @Accept json
+// @Produce json
+// @Success 200 {object} Response
+// @Router /api/info [get]
+func getInfo(c *gin.Context) {
+	c.JSON(http.StatusOK, Response{
+		Code:    0,
+		Message: "success",
+		Data: gin.H{
+			"name":        "mdblog",
+			"version":     "1.0.0",
+			"description": "轻量级 Markdown 博客系统",
+			"author":      "wdc",
+		},
+	})
 }

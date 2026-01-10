@@ -23,6 +23,8 @@ public/
 # content/blog/
 # content/page/
 
+docs/
+
 # IDE
 .idea/
 .vscode/
