@@ -44,6 +44,29 @@ pinned: true
 
 > 💡 每次你 push 代码到 GitHub，Zeabur 会自动重新部署。
 
+### 6. 配置持久化存储（重要）
+
+默认情况下，每次重新部署会覆盖文章和数据。如果你想在后台写文章并保留数据，需要配置持久化存储：
+
+1. 进入 Zeabur 控制台，点击你的 mdblog 服务
+2. 点击「Volumes」标签
+3. 添加以下 3 个 Volume：
+
+| Volume ID | Mount Directory | 用途 |
+|-----------|-----------------|------|
+| `content` | `/app/content` | 文章数据 |
+| `data` | `/app/data` | 评论、统计 |
+| `uploads` | `/app/uploads` | 上传的图片 |
+
+4. 每个都点击「Mount Volume」保存
+
+**配置持久化后的行为：**
+- 每次部署时，GitHub 仓库中的新文章会**自动合并**到 Volume（不会覆盖已有文章）
+- 在后台写的文章会保留，不会丢失
+- 如果 GitHub 和 Volume 有同名文件，保留 Volume 中的版本
+
+> 💡 这样你可以同时在 GitHub 和后台管理文章，两边的内容会合并。
+
 ---
 
 ## 二、本地运行

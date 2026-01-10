@@ -27,10 +27,16 @@ COPY --from=builder /build/mdblog .
 COPY --from=builder /build/config.yaml .
 COPY --from=builder /build/themes/ ./themes/
 COPY --from=builder /build/admin/ ./admin/
-COPY --from=builder /build/content/ ./content/
-COPY --from=builder /build/data/ ./data/
-COPY --from=builder /build/uploads/ ./uploads/
+COPY --from=builder /build/entrypoint.sh .
+
+# GitHub 数据先复制到临时目录，启动时合并到 Volume
+COPY --from=builder /build/content/ ./github-content/
+COPY --from=builder /build/data/ ./github-data/
+COPY --from=builder /build/uploads/ ./github-uploads/
+
+# 创建挂载点目录
+RUN mkdir -p /app/content /app/data /app/uploads && chmod +x /app/entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["./mdblog"]
+CMD ["/app/entrypoint.sh"]
