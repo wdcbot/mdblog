@@ -26,6 +26,16 @@
         <div class="content">
             {{ Content|safe }}
         </div>
+        
+        <!-- 文章底部广告位 -->
+        {% if Site.AdsCode %}
+        <div class="ad-container" style="margin: 2rem 0; text-align: center;">
+            <ins class="adsbygoogle"
+                style="display:block"
+                data-ad-format="auto"
+                data-full-width-responsive="true"></ins>
+        </div>
+        {% endif %}
 
         <nav class="post-nav">
             {% if PrevPost %}

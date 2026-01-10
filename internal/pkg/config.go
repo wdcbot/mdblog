@@ -48,6 +48,7 @@ type SiteConfig struct {
 	DefaultTheme       string `mapstructure:"default_theme"`
 	AccentColor        string `mapstructure:"accent_color"`
 	Analytics          string
+	AdsCode            string `mapstructure:"ads_code"` // 广告代码（如 Google AdSense）
 	Footer             FooterConfig
 }
 
@@ -225,6 +226,13 @@ func UpdateFooterConfig(copyright, icp string, links []FooterLink) error {
 func UpdateAnalyticsConfig(analytics string) error {
 	AppConfig.Site.Analytics = analytics
 	viper.Set("site.analytics", analytics)
+	return viper.WriteConfig()
+}
+
+// UpdateAdsConfig 更新广告代码配置
+func UpdateAdsConfig(adsCode string) error {
+	AppConfig.Site.AdsCode = adsCode
+	viper.Set("site.ads_code", adsCode)
 	return viper.WriteConfig()
 }
 

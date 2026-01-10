@@ -2,6 +2,8 @@
 
 轻量级 Markdown 博客系统，无数据库依赖。
 
+> 本项目基于 [TwoThreeWang/mdblog](https://github.com/TwoThreeWang/mdblog) 二次开发，进行了大量功能增强和优化。
+
 **预览地址：** https://wdc.zeabur.app
 
 ## 特性

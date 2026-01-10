@@ -195,6 +195,27 @@
                     </form>
                 </div>
                 
+                <!-- 广告代码 -->
+                <div class="card" style="padding: 20px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
+                        <i class="fa-solid fa-rectangle-ad"></i> 广告代码
+                    </h4>
+                    <form id="adsForm" onsubmit="event.preventDefault(); saveAds();">
+                        <div class="form-group">
+                            <label class="form-label">Google AdSense 代码</label>
+                            <textarea name="ads_code" class="form-control" rows="6" placeholder="粘贴 AdSense 的 &lt;script&gt; 代码，将自动插入到页面中">{{.Config.Site.AdsCode}}</textarea>
+                            <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">
+                                <i class="fa-solid fa-info-circle"></i> 
+                                广告代码会插入到 &lt;head&gt; 中，并在文章页面底部显示广告位
+                            </p>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">保存广告</button>
+                        </div>
+                    </form>
+                </div>
+                
                 <!-- 数据备份/恢复 -->
                 <div class="card" style="padding: 20px; margin-top: 20px;">
                     <h4 style="margin: 0 0 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem;">
@@ -317,6 +338,13 @@
             const form = document.getElementById('analyticsForm');
             const formData = new FormData(form);
             submitForm('/admin/settings/analytics', formData, form.querySelector('button[type="submit"]'));
+        }
+        
+        // 广告代码
+        function saveAds() {
+            const form = document.getElementById('adsForm');
+            const formData = new FormData(form);
+            submitForm('/admin/settings/ads', formData, form.querySelector('button[type="submit"]'));
         }
         
         function submitForm(url, formData, btn) {

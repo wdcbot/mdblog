@@ -807,6 +807,17 @@ func SetupRouter() *gin.Engine {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
+	// 广告代码
+	admin.POST("/settings/ads", func(c *gin.Context) {
+		adsCode := c.PostForm("ads_code")
+
+		if err := pkg.UpdateAdsConfig(adsCode); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
 	// 图片上传
 	admin.POST("/upload", func(c *gin.Context) {
 		file, err := c.FormFile("file")

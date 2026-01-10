@@ -30,6 +30,10 @@ site:
     
     analytics: ""
     
+    # 广告代码（Google AdSense）
+    # 将你的 AdSense 代码粘贴到这里
+    ads_code: ""
+    
     footer:
         copyright: ""
         icp: ""
